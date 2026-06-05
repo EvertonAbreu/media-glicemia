@@ -6,11 +6,23 @@ function loadData() {
         glucoseRecords = JSON.parse(saved);
     }
     updateUI();
+    updateLastGlucose();
 }
 
 function saveData() {
     localStorage.setItem('glucoseRecords', JSON.stringify(glucoseRecords));
     updateUI();
+    updateLastGlucose();
+}
+
+function updateLastGlucose() {
+    if (glucoseRecords.length > 0) {
+        const sorted = [...glucoseRecords].sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+        const last = sorted[0];
+        document.getElementById('currentGlucose').textContent = last.glucose;
+    } else {
+        document.getElementById('currentGlucose').textContent = '--';
+    }
 }
 
 function getWeekday(date) {
@@ -19,14 +31,14 @@ function getWeekday(date) {
 }
 
 function getGlucoseStatus(glucose) {
-    if (glucose > 140) return { text: 'Alta ⚠️', class: 'status-high' };
-    if (glucose < 70) return { text: 'Baixa ⚠️', class: 'status-low' };
-    return { text: 'Normal ✓', class: 'status-normal' };
+    if (glucose > 140) return { text: 'Alta', class: 'status-high', emoji: '⚠️' };
+    if (glucose < 70) return { text: 'Baixa', class: 'status-low', emoji: '⚠️' };
+    return { text: 'Normal', class: 'status-normal', emoji: '✅' };
 }
 
 function updateStats() {
     const total = glucoseRecords.length;
-    const avgGlucose = total > 0 ? (glucoseRecords.reduce((sum, record) => sum + record.glucose, 0) / total).toFixed(1) : 0;
+    const avgGlucose = total > 0 ? (glucoseRecords.reduce((sum, record) => sum + record.glucose, 0) / total).toFixed(0) : 0;
     const uniqueDays = new Set(glucoseRecords.map(record => record.date.split('T')[0])).size;
     
     document.getElementById('totalCount').textContent = total;
@@ -36,7 +48,7 @@ function updateStats() {
 
 function updateRecordsList() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const statusFilter = document.getElementById('filterStatus').value;
+    const activeFilter = document.querySelector('.chip.active')?.dataset.filter || 'all';
     
     let filteredRecords = glucoseRecords;
     
@@ -46,11 +58,11 @@ function updateRecordsList() {
         );
     }
     
-    if (statusFilter !== 'all') {
+    if (activeFilter !== 'all') {
         filteredRecords = filteredRecords.filter(record => {
-            if (statusFilter === 'high') return record.glucose > 140;
-            if (statusFilter === 'normal') return record.glucose >= 70 && record.glucose <= 140;
-            if (statusFilter === 'low') return record.glucose < 70;
+            if (activeFilter === 'high') return record.glucose > 140;
+            if (activeFilter === 'normal') return record.glucose >= 70 && record.glucose <= 140;
+            if (activeFilter === 'low') return record.glucose < 70;
             return true;
         });
     }
@@ -59,10 +71,10 @@ function updateRecordsList() {
     
     if (filteredRecords.length === 0) {
         recordsList.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">📭</div>
-                <p>Nenhum registro encontrado</p>
-                <small>Adicione sua primeira medição</small>
+            <div class="empty-modern">
+                <div class="empty-animation">📭</div>
+                <p>Nenhuma medição registrada</p>
+                <small>Comece adicionando sua primeira medição</small>
             </div>
         `;
         return;
@@ -73,24 +85,23 @@ function updateRecordsList() {
     recordsList.innerHTML = filteredRecords.map(record => {
         const status = getGlucoseStatus(record.glucose);
         return `
-            <div class="record-item">
-                <div class="record-header">
-                    <div class="record-datetime">
+            <div class="timeline-item">
+                <div class="timeline-header">
+                    <div class="timeline-date">
                         <span>📅</span>
                         <span>${record.datetime}</span>
                     </div>
-                    <div class="record-weekday">${record.weekday}</div>
+                    <div class="timeline-badge ${status.class}">${status.emoji} ${status.text}</div>
                 </div>
-                <div class="record-values">
+                <div class="timeline-body">
                     <div>
-                        <span class="glucose-value">${record.glucose}</span>
-                        <span class="glucose-unit">mg/dL</span>
-                        <span class="status-badge ${status.class}">${status.text}</span>
+                        <span class="glucose-large">${record.glucose}</span>
+                        <span style="font-size: 12px; color: #666;"> mg/dL</span>
                     </div>
-                    ${record.insulin ? `<div class="insulin-value">💉 ${record.insulin} U</div>` : ''}
-                    <button class="delete-record" onclick="deleteRecord('${record.id}')">🗑️ Excluir</button>
+                    ${record.insulin ? `<div class="insulin-pill">💉 ${record.insulin} U</div>` : ''}
+                    <button class="delete-timeline" onclick="deleteRecord('${record.id}')">🗑️</button>
                 </div>
-                ${record.notes ? `<div class="record-notes">📋 ${record.notes}</div>` : ''}
+                ${record.notes ? `<div class="timeline-footer">📝 ${record.notes}</div>` : ''}
             </div>
         `;
     }).join('');
@@ -99,7 +110,8 @@ function updateRecordsList() {
 function checkInsulinRequirement(glucose) {
     const insulinGroup = document.getElementById('insulinGroup');
     if (glucose > 140 || glucose < 70) {
-        insulinGroup.style.display = 'block';
+        insulinGroup.style.display = 'flex';
+        insulinGroup.classList.add('slide-down');
     } else {
         insulinGroup.style.display = 'none';
         document.getElementById('insulin').value = '';
@@ -107,27 +119,28 @@ function checkInsulinRequirement(glucose) {
 }
 
 window.deleteRecord = function(id) {
-    if (confirm('Tem certeza que deseja excluir este registro?')) {
+    if (confirm('Excluir esta medição?')) {
         glucoseRecords = glucoseRecords.filter(record => record.id !== id);
         saveData();
-        showNotification('Registro excluído com sucesso!', 'success');
+        showNotification('Registro excluído!', 'success');
     }
 }
 
 function showNotification(message, type = 'success') {
     const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
+    notification.className = `notification-premium ${type}`;
     notification.textContent = message;
     document.body.appendChild(notification);
     
     setTimeout(() => {
-        notification.remove();
-    }, 3000);
+        notification.style.animation = 'slideUp 0.3s ease reverse';
+        setTimeout(() => notification.remove(), 300);
+    }, 2500);
 }
 
 function exportData() {
     if (glucoseRecords.length === 0) {
-        showNotification('Não há dados para exportar!', 'error');
+        showNotification('Sem dados para exportar!', 'error');
         return;
     }
     
@@ -140,7 +153,7 @@ function exportData() {
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
     
-    showNotification('Dados exportados com sucesso!', 'success');
+    showNotification('Dados exportados!', 'success');
 }
 
 function updateUI() {
@@ -148,22 +161,44 @@ function updateUI() {
     updateRecordsList();
 }
 
-document.getElementById('clearFiltersBtn').addEventListener('click', () => {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('filterStatus').value = 'all';
-    updateRecordsList();
+// Insulin increment/decrement
+document.querySelector('.insulin-dec')?.addEventListener('click', () => {
+    const input = document.getElementById('insulin');
+    const value = parseFloat(input.value) || 0;
+    if (value > 0) input.value = value - 0.5;
 });
 
-document.getElementById('exportBtn').addEventListener('click', exportData);
+document.querySelector('.insulin-inc')?.addEventListener('click', () => {
+    const input = document.getElementById('insulin');
+    const value = parseFloat(input.value) || 0;
+    input.value = value + 0.5;
+});
 
-document.getElementById('glucose').addEventListener('input', (e) => {
+// Filter chips
+document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        updateRecordsList();
+    });
+});
+
+// Search input
+document.getElementById('searchInput')?.addEventListener('input', () => updateRecordsList());
+
+// Export button
+document.getElementById('exportBtn')?.addEventListener('click', exportData);
+
+// Glucose input
+document.getElementById('glucose')?.addEventListener('input', (e) => {
     const value = parseInt(e.target.value);
     if (!isNaN(value)) {
         checkInsulinRequirement(value);
     }
 });
 
-document.getElementById('glucoseForm').addEventListener('submit', (e) => {
+// Form submit
+document.getElementById('glucoseForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
     
     const datetime = document.getElementById('datetime').value;
@@ -177,12 +212,12 @@ document.getElementById('glucoseForm').addEventListener('submit', (e) => {
     }
     
     if (isNaN(glucose) || glucose < 20 || glucose > 600) {
-        showNotification('Valor de glicemia inválido (20-600 mg/dL)!', 'error');
+        showNotification('Valor inválido (20-600 mg/dL)!', 'error');
         return;
     }
     
     if ((glucose > 140 || glucose < 70) && !insulin) {
-        showNotification('Para glicemia alterada, informe a insulina aplicada!', 'error');
+        showNotification('Informe a insulina aplicada!', 'error');
         return;
     }
     
@@ -210,7 +245,7 @@ document.getElementById('glucoseForm').addEventListener('submit', (e) => {
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     document.getElementById('datetime').value = now.toISOString().slice(0, 16);
     
-    showNotification('Medição salva com sucesso!', 'success');
+    showNotification('Medição salva! 🎉', 'success');
 });
 
 loadData();
