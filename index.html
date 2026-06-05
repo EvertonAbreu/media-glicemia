@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle de Glicemia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .records-section {
+            margin-top: 30px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filters input, .filters select {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .records-table {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-high {
+            background: #fee;
+            color: #c00;
+        }
+
+        .status-low {
+            background: #ffe6e6;
+            color: #ff6b6b;
+        }
+
+        .status-normal {
+            background: #e6f7e6;
+            color: #28a745;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 15px;
+            }
+            
+            th, td {
+                padding: 8px;
+                font-size: 12px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🩸 Sistema de Controle Glicêmico</h1>
+            <p>Monitore sua glicemia e insulina de forma eficiente</p>
+        </div>
+        
+        <div class="content">
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Total de Medições</h3>
+                    <div class="value" id="totalCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Média de Glicemia</h3>
+                    <div class="value" id="avgGlucose">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Dias Monitorados</h3>
+                    <div class="value" id="uniqueDays">0</div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 style="margin-bottom: 20px;">📝 Nova Medição</h2>
+                <form id="glucoseForm">
+                    <div class="form-group">
+                        <label>Data e Hora:</label>
+                        <input type="datetime-local" id="datetime" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Glicemia (mg/dL):</label>
+                        <input type="number" id="glucose" required step="1" placeholder="Ex: 120">
+                    </div>
+                    
+                    <div class="form-group" id="insulinGroup" style="display: none;">
+                        <label>Insulina Aplicada (unidades):</label>
+                        <input type="number" id="insulin" step="0.5" placeholder="Quantidade de insulina">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Observações:</label>
+                        <textarea id="notes" rows="3" placeholder="Observações adicionais..."></textarea>
+                    </div>
+                    
+                    <button type="submit">💾 Salvar Medição</button>
+                </form>
+            </div>
+
+            <div class="records-section">
+                <h2 style="margin-bottom: 20px;">📊 Histórico de Medições</h2>
+                
+                <div class="filters">
+                    <input type="text" id="searchInput" placeholder="🔍 Buscar por data..." class="search-input">
+                    <select id="filterStatus">
+                        <option value="all">Todos os status</option>
+                        <option value="high">Alta (>140)</option>
+                        <option value="normal">Normal (70-140)</option>
+                        <option value="low">Baixa (<70)</option>
+                    </select>
+                    <button id="clearFiltersBtn" style="width: auto; padding: 12px 20px;">Limpar Filtros</button>
+                </div>
+                
+                <div class="records-table">
+                    <table id="recordsTable">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Dia da Semana</th>
+                                <th>Glicemia</th>
+                                <th>Status</th>
+                                <th>Insulina</th>
+                                <th>Observações</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsBody">
+                            <tr><td colspan="7" style="text-align: center;">Nenhum registro encontrado</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Array para armazenar os registros
+        let glucoseRecords = [];
+
+        // Carregar dados do localStorage
+        function loadData() {
+            const saved = localStorage.getItem('glucoseRecords');
+            if (saved) {
+                glucoseRecords = JSON.parse(saved);
+            }
+            updateUI();
+        }
+
+        // Salvar dados no localStorage
+        function saveData() {
+            localStorage.setItem('glucoseRecords', JSON.stringify(glucoseRecords));
+            updateUI();
+        }
+
+        // Obter dia da semana em português
+        function getWeekday(date) {
+            const weekdays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+            return weekdays[date.getDay()];
+        }
+
+        // Verificar status da glicemia
+        function getGlucoseStatus(glucose) {
+            if (glucose > 140) return { text: 'Alta ⚠️', class: 'status-high' };
+            if (glucose < 70) return { text: 'Baixa ⚠️', class: 'status-low' };
+            return { text: 'Normal ✓', class: 'status-normal' };
+        }
+
+        // Atualizar estatísticas
+        function updateStats() {
+            const total = glucoseRecords.length;
+            const avgGlucose = total > 0 ? (glucoseRecords.reduce((sum, record) => sum + record.glucose, 0) / total).toFixed(1) : 0;
+            const uniqueDays = new Set(glucoseRecords.map(record => record.date.split('T')[0])).size;
+            
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('avgGlucose').textContent = avgGlucose;
+            document.getElementById('uniqueDays').textContent = uniqueDays;
+        }
+
+        // Atualizar tabela com filtros
+        function updateTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+            
+            let filteredRecords = glucoseRecords;
+            
+            // Aplicar filtro de busca
+            if (searchTerm) {
+                filteredRecords = filteredRecords.filter(record => 
+                    record.datetime.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Aplicar filtro de status
+            if (statusFilter !== 'all') {
+                filteredRecords = filteredRecords.filter(record => {
+                    if (statusFilter === 'high') return record.glucose > 140;
+                    if (statusFilter === 'normal') return record.glucose >= 70 && record.glucose <= 140;
+                    if (statusFilter === 'low') return record.glucose < 70;
+                    return true;
+                });
+            }
+            
+            const tbody = document.getElementById('recordsBody');
+            
+            if (filteredRecords.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhum registro encontrado</td></tr>';
+                return;
+            }
+            
+            // Ordenar por data (mais recente primeiro)
+            filteredRecords.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+            
+            tbody.innerHTML = filteredRecords.map(record => {
+                const status = getGlucoseStatus(record.glucose);
+                return `
+                    <tr>
+                        <td>${record.datetime}</td>
+                        <td>${record.weekday}</td>
+                        <td><strong>${record.glucose}</strong> mg/dL</td>
+                        <td><span class="status ${status.class}">${status.text}</span></td>
+                        <td>${record.insulin ? record.insulin + ' U' : '-'}</td>
+                        <td>${record.notes || '-'}</td>
+                        <td><button class="delete-btn" onclick="deleteRecord('${record.id}')">🗑️</button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Mostrar/esconder campo de insulina
+        function checkInsulinRequirement(glucose) {
+            const insulinGroup = document.getElementById('insulinGroup');
+            if (glucose > 140 || glucose < 70) {
+                insulinGroup.style.display = 'block';
+            } else {
+                insulinGroup.style.display = 'none';
+                document.getElementById('insulin').value = '';
+            }
+        }
+
+        // Deletar registro
+        window.deleteRecord = function(id) {
+            if (confirm('Tem certeza que deseja excluir este registro?')) {
+                glucoseRecords = glucoseRecords.filter(record => record.id !== id);
+                saveData();
+                updateUI();
+                showNotification('Registro excluído com sucesso!', 'success');
+            }
+        }
+
+        // Mostrar notificação
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.padding = '15px 20px';
+            notification.style.backgroundColor = type === 'success' ? '#28a745' : '#dc3545';
+            notification.style.color = 'white';
+            notification.style.borderRadius = '10px';
+            notification.style.zIndex = '1000';
+            notification.style.animation = 'slideIn 0.5s ease';
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Atualizar toda a interface
+        function updateUI() {
+            updateStats();
+            updateTable();
+        }
+
+        // Limpar filtros
+        document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterStatus').value = 'all';
+            updateTable();
+        });
+
+        // Event listener para campo de glicemia
+        document.getElementById('glucose').addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            if (!isNaN(value)) {
+                checkInsulinRequirement(value);
+            }
+        });
+
+        // Event listener para o formulário
+        document.getElementById('glucoseForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const datetime = document.getElementById('datetime').value;
+            const glucose = parseInt(document.getElementById('glucose').value);
+            const insulin = document.getElementById('insulin').value;
+            const notes = document.getElementById('notes').value;
+            
+            if (!datetime) {
+                showNotification('Por favor, selecione data e hora!', 'error');
+                return;
+            }
+            
+            if (isNaN(glucose) || glucose < 20 || glucose > 600) {
+                showNotification('Por favor, insira um valor de glicemia válido (20-600 mg/dL)!', 'error');
+                return;
+            }
+            
+            if ((glucose > 140 || glucose < 70) && !insulin) {
+                showNotification('Para glicemia alta ou baixa, é obrigatório informar a quantidade de insulina aplicada!', 'error');
+                return;
+            }
+            
+            const date = new Date(datetime);
+            const weekday = getWeekday(date);
+            const id = Date.now().toString();
+            
+            const newRecord = {
+                id,
+                datetime: datetime.replace('T', ' '),
+                date: datetime.split('T')[0],
+                weekday,
+                glucose,
+                insulin: insulin ? parseFloat(insulin) : null,
+                notes: notes || ''
+            };
+            
+            glucoseRecords.push(newRecord);
+            saveData();
+            
+            // Limpar formulário
+            document.getElementById('glucoseForm').reset();
+            document.getElementById('insulinGroup').style.display = 'none';
+            
+            showNotification('Medição salva com sucesso!', 'success');
+        });
+
+        // Adicionar estilos para animação
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            textarea {
+                width: 100%;
+                padding: 12px;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 16px;
+                font-family: inherit;
+                resize: vertical;
+            }
+            
+            textarea:focus {
+                outline: none;
+                border-color: #667eea;
+            }
+            
+            .delete-btn {
+                background: #dc3545;
+                padding: 5px 10px;
+                font-size: 12px;
+                width: auto;
+            }
+            
+            .search-input {
+                flex: 2;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Inicializar o sistema
+        loadData();
+        
+        // Definir data/hora atual como padrão
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('datetime').value = now.toISOString().slice(0, 16);
+    </script>
+</body>
+</html>
