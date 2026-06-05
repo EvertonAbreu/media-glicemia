@@ -448,4 +448,66 @@ document.getElementById('glucoseForm')?.addEventListener('submit', async (e) => 
         return;
     }
     
-    const datetime = document.getElementById('
+    const datetime = document.getElementById('datetime').value;
+    const glucose = parseInt(document.getElementById('glucose').value);
+    const insulin = document.getElementById('insulin').value;
+    const notes = document.getElementById('notes').value;
+    
+    if (!datetime || isNaN(glucose)) {
+        showNotification('Preencha todos os campos!', 'error');
+        return;
+    }
+    
+    if (glucose < 20 || glucose > 600) {
+        showNotification('Valor de glicemia inválido (20-600 mg/dL)!', 'error');
+        return;
+    }
+    
+    if ((glucose > 140 || glucose < 70) && !insulin) {
+        showNotification('Para glicemia alterada, informe a insulina!', 'error');
+        return;
+    }
+    
+    showLoading();
+    try {
+        await saveGlucose({
+            datetime: datetime.replace('T', ' '),
+            glucose,
+            insulin: insulin || null,
+            notes: notes || ''
+        });
+        
+        await updateUI();
+        document.getElementById('glucoseForm').reset();
+        document.getElementById('insulinGroup').style.display = 'none';
+        
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('datetime').value = now.toISOString().slice(0, 16);
+        showNotification('Medição salva com sucesso!');
+    } catch (error) {
+        showNotification('Erro ao salvar: ' + error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+});
+
+// Data/hora atual
+const now = new Date();
+now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+const datetimeInput = document.getElementById('datetime');
+if (datetimeInput) {
+    datetimeInput.value = now.toISOString().slice(0, 16);
+}
+
+// Verificar estado de autenticação
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        currentUser = user;
+        await loadUserProfile(user.uid);
+        await updateUI();
+        document.getElementById('appScreen').classList.add('active');
+        document.getElementById('loginScreen').classList.remove('active');
+        document.getElementById('registerScreen').classList.remove('active');
+    }
+});
