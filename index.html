@@ -2,92 +2,130 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Controle Glicêmico - DiabCare</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>DiabCare - Controle de Diabetes</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
+    <div class="app-container">
+        <!-- Header -->
         <div class="header">
-            <h1>🩸 DiabCare - Sistema de Controle Glicêmico</h1>
-            <p>Monitore sua glicemia e insulina de forma eficiente</p>
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🩸</span>
+                    <h1>DiabCare</h1>
+                </div>
+                <p class="subtitle">Controle Inteligente de Glicemia</p>
+            </div>
         </div>
-        
-        <div class="content">
-            <div class="stats">
-                <div class="stat-card">
-                    <h3>Total de Medições</h3>
-                    <div class="value" id="totalCount">0</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Média de Glicemia</h3>
-                    <div class="value" id="avgGlucose">0</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Dias Monitorados</h3>
-                    <div class="value" id="uniqueDays">0</div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-info">
+                    <h3>Total</h3>
+                    <div class="stat-value" id="totalCount">0</div>
                 </div>
             </div>
-
-            <div class="form-section">
-                <h2 style="margin-bottom: 20px;">📝 Nova Medição</h2>
-                <form id="glucoseForm">
-                    <div class="form-group">
-                        <label>Data e Hora:</label>
-                        <input type="datetime-local" id="datetime" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Glicemia (mg/dL):</label>
-                        <input type="number" id="glucose" required step="1" placeholder="Ex: 120">
-                    </div>
-                    
-                    <div class="form-group" id="insulinGroup" style="display: none;">
-                        <label>Insulina Aplicada (unidades):</label>
-                        <input type="number" id="insulin" step="0.5" placeholder="Quantidade de insulina">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Observações:</label>
-                        <textarea id="notes" rows="3" placeholder="Observações adicionais..."></textarea>
-                    </div>
-                    
-                    <button type="submit">💾 Salvar Medição</button>
-                </form>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-info">
+                    <h3>Média</h3>
+                    <div class="stat-value" id="avgGlucose">0</div>
+                    <small>mg/dL</small>
+                </div>
             </div>
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-info">
+                    <h3>Dias</h3>
+                    <div class="stat-value" id="uniqueDays">0</div>
+                </div>
+            </div>
+        </div>
 
-            <div class="records-section">
-                <h2 style="margin-bottom: 20px;">📊 Histórico de Medições</h2>
-                
-                <div class="filters">
-                    <input type="text" id="searchInput" placeholder="🔍 Buscar por data..." class="search-input">
-                    <select id="filterStatus">
-                        <option value="all">Todos os status</option>
-                        <option value="high">Alta (>140)</option>
-                        <option value="normal">Normal (70-140)</option>
-                        <option value="low">Baixa (<70)</option>
-                    </select>
-                    <button id="clearFiltersBtn" style="width: auto; padding: 12px 20px;">Limpar Filtros</button>
-                    <button id="exportBtn" style="width: auto; padding: 12px 20px; background: #28a745;">📥 Exportar Dados</button>
+        <!-- Form Section -->
+        <div class="form-card">
+            <div class="card-header">
+                <span class="card-icon">📝</span>
+                <h2>Nova Medição</h2>
+            </div>
+            
+            <form id="glucoseForm">
+                <div class="form-group">
+                    <label>
+                        <span class="label-icon">📅</span>
+                        Data e Hora
+                    </label>
+                    <input type="datetime-local" id="datetime" required>
                 </div>
                 
-                <div class="records-table">
-                    <table id="recordsTable">
-                        <thead>
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Dia da Semana</th>
-                                <th>Glicemia</th>
-                                <th>Status</th>
-                                <th>Insulina</th>
-                                <th>Observações</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recordsBody">
-                            <tr><td colspan="7" style="text-align: center;">Nenhum registro encontrado</td></tr>
-                        </tbody>
-                    </table>
+                <div class="form-group">
+                    <label>
+                        <span class="label-icon">🩸</span>
+                        Glicemia (mg/dL)
+                    </label>
+                    <input type="number" id="glucose" required step="1" placeholder="Ex: 120">
+                    <div class="input-hint">Valores normais: 70-140 mg/dL</div>
+                </div>
+                
+                <div class="form-group" id="insulinGroup" style="display: none;">
+                    <label>
+                        <span class="label-icon">💉</span>
+                        Insulina Aplicada (unidades)
+                    </label>
+                    <input type="number" id="insulin" step="0.5" placeholder="Quantidade de insulina">
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <span class="label-icon">📋</span>
+                        Observações
+                    </label>
+                    <textarea id="notes" rows="3" placeholder="Sintomas, alimentação, exercícios..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <span>💾</span> Salvar Medição
+                </button>
+            </form>
+        </div>
+
+        <!-- Records Section -->
+        <div class="records-card">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                <h2>Histórico de Medições</h2>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filters-bar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Buscar por data...">
+                </div>
+                
+                <select id="filterStatus" class="filter-select">
+                    <option value="all">📊 Todos</option>
+                    <option value="high">⚠️ Alta (>140)</option>
+                    <option value="normal">✅ Normal (70-140)</option>
+                    <option value="low">⚠️ Baixa (<70)</option>
+                </select>
+                
+                <div class="action-buttons">
+                    <button id="clearFiltersBtn" class="btn-secondary">🗑️ Limpar</button>
+                    <button id="exportBtn" class="btn-success">📥 Exportar</button>
+                </div>
+            </div>
+            
+            <!-- Records List (Mobile optimized) -->
+            <div class="records-list" id="recordsList">
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p>Nenhum registro encontrado</p>
+                    <small>Adicione sua primeira medição</small>
                 </div>
             </div>
         </div>
