@@ -1,498 +1,136 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 20px;
-}
-
-.app-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding-bottom: 30px;
-}
-
-/* Header */
-.header {
-    text-align: center;
-    margin-bottom: 25px;
-    animation: fadeInDown 0.6s ease;
-}
-
-.header-content {
-    background: rgba(255,255,255,0.95);
-    padding: 20px;
-    border-radius: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    backdrop-filter: blur(10px);
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 8px;
-}
-
-.logo-icon {
-    font-size: 2.5em;
-    animation: pulse 2s infinite;
-}
-
-.logo h1 {
-    font-size: 1.8em;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.subtitle {
-    color: #666;
-    font-size: 0.9em;
-}
-
-/* Stats Grid */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.stat-card {
-    background: white;
-    padding: 15px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-    animation: fadeInUp 0.6s ease;
-}
-
-.stat-card:active {
-    transform: scale(0.98);
-}
-
-.stat-icon {
-    font-size: 2em;
-}
-
-.stat-info {
-    flex: 1;
-}
-
-.stat-info h3 {
-    font-size: 0.75em;
-    color: #666;
-    margin-bottom: 4px;
-}
-
-.stat-value {
-    font-size: 1.5em;
-    font-weight: bold;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.stat-info small {
-    font-size: 0.7em;
-    color: #999;
-}
-
-/* Cards */
-.form-card, .records-card {
-    background: white;
-    border-radius: 25px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    animation: fadeInUp 0.6s ease;
-}
-
-.card-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #f0f0f0;
-}
-
-.card-icon {
-    font-size: 1.5em;
-}
-
-.card-header h2 {
-    font-size: 1.3em;
-    color: #333;
-}
-
-/* Form */
-.form-group {
-    margin-bottom: 20px;
-}
-
-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
-    font-size: 0.9em;
-}
-
-.label-icon {
-    font-size: 1.1em;
-}
-
-input, select, textarea {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 15px;
-    font-size: 16px;
-    font-family: inherit;
-    transition: all 0.3s ease;
-    background: #f8f9fa;
-}
-
-input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: #667eea;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
-}
-
-.input-hint {
-    font-size: 0.75em;
-    color: #999;
-    margin-top: 5px;
-}
-
-textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-/* Buttons */
-.btn-primary, .btn-secondary, .btn-success {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 15px;
-    font-size: 1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.btn-primary:active {
-    transform: scale(0.98);
-}
-
-.btn-secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.btn-success {
-    background: #28a745;
-    color: white;
-}
-
-/* Filters */
-.filters-bar {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.search-box {
-    position: relative;
-}
-
-.search-icon {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 1.1em;
-}
-
-.search-box input {
-    padding-left: 40px;
-}
-
-.filter-select {
-    background: #f8f9fa;
-    cursor: pointer;
-}
-
-.action-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-/* Records List */
-.records-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.record-item {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 15px;
-    transition: all 0.3s ease;
-    animation: fadeInUp 0.4s ease;
-}
-
-.record-item:active {
-    transform: scale(0.99);
-}
-
-.record-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.record-datetime {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85em;
-    color: #666;
-}
-
-.record-weekday {
-    font-weight: 600;
-    color: #667eea;
-}
-
-.record-values {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.glucose-value {
-    font-size: 1.5em;
-    font-weight: bold;
-}
-
-.glucose-unit {
-    font-size: 0.8em;
-    color: #666;
-}
-
-.insulin-value {
-    background: #e3f2fd;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    font-weight: 600;
-    color: #1976d2;
-}
-
-.record-notes {
-    font-size: 0.85em;
-    color: #666;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #e0e0e0;
-}
-
-.delete-record {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 0.85em;
-    transition: all 0.3s ease;
-}
-
-.delete-record:active {
-    transform: scale(0.95);
-}
-
-/* Status Badges */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.75em;
-    font-weight: 600;
-}
-
-.status-high {
-    background: #fee;
-    color: #c00;
-}
-
-.status-low {
-    background: #ffe6e6;
-    color: #ff6b6b;
-}
-
-.status-normal {
-    background: #e6f7e6;
-    color: #28a745;
-}
-
-/* Empty State */
-.empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: #999;
-}
-
-.empty-icon {
-    font-size: 4em;
-    margin-bottom: 10px;
-    opacity: 0.5;
-}
-
-.empty-state p {
-    margin-bottom: 5px;
-    font-size: 1.1em;
-}
-
-.empty-state small {
-    font-size: 0.85em;
-}
-
-/* Animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes pulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-}
-
-/* Notification */
-.notification {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    background: #333;
-    color: white;
-    padding: 15px;
-    border-radius: 15px;
-    text-align: center;
-    z-index: 1000;
-    animation: fadeInUp 0.3s ease;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-}
-
-.notification.success {
-    background: #28a745;
-}
-
-.notification.error {
-    background: #dc3545;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-    body {
-        padding: 10px;
-    }
-    
-    .stat-value {
-        font-size: 1.2em;
-    }
-    
-    .stat-icon {
-        font-size: 1.5em;
-    }
-    
-    .card-header h2 {
-        font-size: 1.1em;
-    }
-}
-
-@media (min-width: 768px) {
-    .app-container {
-        max-width: 800px;
-    }
-    
-    .stats-grid {
-        gap: 20px;
-    }
-    
-    .filters-bar {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-    
-    .search-box {
-        flex: 2;
-    }
-    
-    .filter-select {
-        flex: 1;
-    }
-    
-    .action-buttons {
-        flex: 1;
-        grid-template-columns: 1fr 1fr;
-    }
-}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>DiabCare - Controle de Diabetes</title>
+    <link rel="stylesheet" href="style.css">  <!-- ← CORRIGIDO: sem o 's' -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🩸</span>
+                    <h1>DiabCare</h1>
+                </div>
+                <p class="subtitle">Controle Inteligente de Glicemia</p>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-info">
+                    <h3>Total</h3>
+                    <div class="stat-value" id="totalCount">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-info">
+                    <h3>Média</h3>
+                    <div class="stat-value" id="avgGlucose">0</div>
+                    <small>mg/dL</small>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-info">
+                    <h3>Dias</h3>
+                    <div class="stat-value" id="uniqueDays">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-card">
+            <div class="card-header">
+                <span class="card-icon">📝</span>
+                <h2>Nova Medição</h2>
+            </div>
+            
+            <form id="glucoseForm">
+                <div class="form-group">
+                    <label>
+                        <span class="label-icon">📅</span>
+                        Data e Hora
+                    </label>
+                    <input type="datetime-local" id="datetime" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <span class="label-icon">🩸</span>
+                        Glicemia (mg/dL)
+                    </label>
+                    <input type="number" id="glucose" required step="1" placeholder="Ex: 120">
+                    <div class="input-hint">Valores normais: 70-140 mg/dL</div>
+                </div>
+                
+                <div class="form-group" id="insulinGroup" style="display: none;">
+                    <label>
+                        <span class="label-icon">💉</span>
+                        Insulina Aplicada (unidades)
+                    </label>
+                    <input type="number" id="insulin" step="0.5" placeholder="Quantidade de insulina">
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <span class="label-icon">📋</span>
+                        Observações
+                    </label>
+                    <textarea id="notes" rows="3" placeholder="Sintomas, alimentação, exercícios..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <span>💾</span> Salvar Medição
+                </button>
+            </form>
+        </div>
+
+        <!-- Records Section -->
+        <div class="records-card">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                <h2>Histórico de Medições</h2>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filters-bar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Buscar por data...">
+                </div>
+                
+                <select id="filterStatus" class="filter-select">
+                    <option value="all">📊 Todos</option>
+                    <option value="high">⚠️ Alta (>140)</option>
+                    <option value="normal">✅ Normal (70-140)</option>
+                    <option value="low">⚠️ Baixa (<70)</option>
+                </select>
+                
+                <div class="action-buttons">
+                    <button id="clearFiltersBtn" class="btn-secondary">🗑️ Limpar</button>
+                    <button id="exportBtn" class="btn-success">📥 Exportar</button>
+                </div>
+            </div>
+            
+            <!-- Records List -->
+            <div class="records-list" id="recordsList">
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p>Nenhum registro encontrado</p>
+                    <small>Adicione sua primeira medição</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
