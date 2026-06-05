@@ -5,290 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>DiabCare - Controle de Diabetes</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-
-        .app-container {
-            max-width: 500px;
-            margin: 0 auto;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        .screen {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .screen.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .auth-card {
-            background: white;
-            margin: 20px;
-            padding: 30px 25px;
-            border-radius: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-
-        .logo-area {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .logo-icon {
-            font-size: 4em;
-            margin-bottom: 10px;
-        }
-
-        .logo-area h1 {
-            font-size: 1.8em;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .logo-area p {
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 0.85em;
-        }
-
-        .input-group input, .input-group select, .input-group textarea {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 16px;
-            font-size: 16px;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .input-group input:focus, .input-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        textarea {
-            resize: vertical;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-
-        .btn-danger {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .auth-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-        }
-
-        .auth-link span {
-            color: #667eea;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .app-header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            padding: 20px;
-            color: white;
-        }
-
-        .user-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .user-name {
-            font-weight: 700;
-            font-size: 1.2em;
-        }
-
-        .glucose-circle {
-            text-align: center;
-            padding: 20px;
-        }
-
-        .circle {
-            background: rgba(255,255,255,0.1);
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-
-        .current-glucose {
-            font-size: 2.5em;
-            font-weight: 800;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            padding: 20px;
-        }
-
-        .stat-item {
-            background: white;
-            padding: 15px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        .stat-value {
-            font-size: 1.5em;
-            font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .stat-label {
-            font-size: 0.75em;
-            color: #666;
-            margin-top: 5px;
-        }
-
-        .form-card, .history-card {
-            background: white;
-            margin: 0 20px 20px;
-            padding: 20px;
-            border-radius: 24px;
-        }
-
-        .record-item {
-            background: #f8f9fa;
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-
-        .record-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75em;
-            font-weight: 600;
-        }
-
-        .badge-high { background: #fee; color: #c00; }
-        .badge-low { background: #ffe6e6; color: #ff6b6b; }
-        .badge-normal { background: #e6f7e6; color: #28a745; }
-
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background: #333;
-            color: white;
-            padding: 15px;
-            border-radius: 16px;
-            text-align: center;
-            z-index: 1000;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid white;
-            border-top-color: #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
     <div class="app-container">
@@ -339,6 +57,10 @@
                         <input type="password" id="regPassword" required placeholder="Mínimo 6 caracteres">
                     </div>
                     <div class="input-group">
+                        <label>🔒 Confirmar Senha</label>
+                        <input type="password" id="regConfirmPassword" required placeholder="Confirme sua senha">
+                    </div>
+                    <div class="input-group">
                         <label>🎂 Idade</label>
                         <input type="number" id="regAge" required placeholder="Sua idade">
                     </div>
@@ -385,6 +107,20 @@
                 </div>
             </div>
 
+            <!-- Filtros de Período -->
+            <div class="filters-card">
+                <h3>📅 Filtros</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="day">Hoje</button>
+                    <button class="filter-btn" data-filter="week">Esta Semana</button>
+                    <button class="filter-btn" data-filter="month">Este Mês</button>
+                    <button class="filter-btn" data-filter="all">Todos</button>
+                </div>
+                <div class="export-buttons">
+                    <button id="exportPDFBtn" class="btn-pdf">📄 Exportar PDF</button>
+                </div>
+            </div>
+
             <div class="form-card">
                 <h3 style="margin-bottom: 15px;">📝 Nova Medição</h3>
                 <form id="glucoseForm">
@@ -410,10 +146,24 @@
 
             <div class="history-card">
                 <h3 style="margin-bottom: 15px;">📊 Histórico</h3>
-                <div id="recordsList">
-                    <div style="text-align: center; padding: 40px; color: #999;">
-                        📭 Nenhum registro ainda
-                    </div>
+                <div class="table-container">
+                    <table class="records-table" id="recordsTable">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Dia</th>
+                                <th>Glicemia</th>
+                                <th>Status</th>
+                                <th>Insulina</th>
+                                <th>Observações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsList">
+                            <tr>
+                                <td colspan="6" style="text-align: center;">📭 Nenhum registro ainda</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -423,281 +173,6 @@
         <div class="spinner"></div>
     </div>
 
-    <script type="module">
-        // Firebase SDKs
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-
-        // Sua configuração do Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyCelgv6HUBqAKkQeKBNDdaP5kakx9-pCZs",
-            authDomain: "diabcare-ff19f.firebaseapp.com",
-            projectId: "diabcare-ff19f",
-            storageBucket: "diabcare-ff19f.firebasestorage.app",
-            messagingSenderId: "667128255049",
-            appId: "1:667128255049:web:861eeec8a96169e380a598"
-        };
-
-        // Inicializar Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let currentUser = null;
-
-        function showLoading() {
-            document.getElementById('loading').style.display = 'flex';
-        }
-
-        function hideLoading() {
-            document.getElementById('loading').style.display = 'none';
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.textContent = message;
-            notification.style.background = type === 'success' ? '#28a745' : '#dc3545';
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
-        }
-
-        async function saveUserProfile(userId, profileData) {
-            await setDoc(doc(db, "users", userId), profileData);
-        }
-
-        async function loadUserProfile(userId) {
-            const docRef = doc(db, "users", userId);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                document.getElementById('userName').textContent = data.name;
-                document.getElementById('diabetesTime').textContent = data.diabetesTime || 0;
-            }
-        }
-
-        async function saveGlucose(record) {
-            if (!currentUser) return;
-            await addDoc(collection(db, "users", currentUser.uid, "glucose"), {
-                ...record,
-                createdAt: new Date().toISOString()
-            });
-        }
-
-        async function loadGlucose() {
-            if (!currentUser) return;
-            const q = query(
-                collection(db, "users", currentUser.uid, "glucose"),
-                orderBy("datetime", "desc")
-            );
-            const querySnapshot = await getDocs(q);
-            const records = [];
-            querySnapshot.forEach((doc) => {
-                records.push({ id: doc.id, ...doc.data() });
-            });
-            return records;
-        }
-
-        async function updateUI() {
-            if (!currentUser) return;
-            const records = await loadGlucose();
-            const total = records.length;
-            const avgGlucose = total > 0 ? (records.reduce((sum, r) => sum + r.glucose, 0) / total).toFixed(0) : 0;
-            
-            document.getElementById('totalCount').textContent = total;
-            document.getElementById('avgGlucose').textContent = avgGlucose;
-            
-            if (records.length > 0) {
-                document.getElementById('currentGlucose').textContent = records[0].glucose;
-            } else {
-                document.getElementById('currentGlucose').textContent = '--';
-            }
-            
-            const recordsList = document.getElementById('recordsList');
-            if (records.length === 0) {
-                recordsList.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">📭 Nenhum registro ainda</div>';
-                return;
-            }
-            
-            recordsList.innerHTML = records.map(record => {
-                let statusClass = '', statusText = '';
-                if (record.glucose > 140) {
-                    statusClass = 'badge-high';
-                    statusText = 'Alta ⚠️';
-                } else if (record.glucose < 70) {
-                    statusClass = 'badge-low';
-                    statusText = 'Baixa ⚠️';
-                } else {
-                    statusClass = 'badge-normal';
-                    statusText = 'Normal ✓';
-                }
-                
-                return `
-                    <div class="record-item">
-                        <div class="record-header">
-                            <span>📅 ${record.datetime}</span>
-                            <span class="badge ${statusClass}">${statusText}</span>
-                        </div>
-                        <div><strong>${record.glucose}</strong> mg/dL</div>
-                        ${record.insulin ? `<div>💉 Insulina: ${record.insulin} U</div>` : ''}
-                        ${record.notes ? `<div style="margin-top: 8px; font-size: 12px; color: #666;">📝 ${record.notes}</div>` : ''}
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Evento para mostrar campo de insulina quando necessário
-        document.getElementById('glucose')?.addEventListener('input', (e) => {
-            const value = parseInt(e.target.value);
-            const insulinGroup = document.getElementById('insulinGroup');
-            if (!isNaN(value) && (value > 140 || value < 70)) {
-                insulinGroup.style.display = 'block';
-            } else {
-                insulinGroup.style.display = 'none';
-            }
-        });
-
-        // Funções globais
-        window.login = async function(email, password) {
-            showLoading();
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                currentUser = userCredential.user;
-                await loadUserProfile(currentUser.uid);
-                await updateUI();
-                document.getElementById('appScreen').classList.add('active');
-                document.getElementById('loginScreen').classList.remove('active');
-                document.getElementById('registerScreen').classList.remove('active');
-                showNotification('Bem-vindo de volta!');
-            } catch (error) {
-                showNotification('Erro ao entrar: ' + error.message, 'error');
-            } finally {
-                hideLoading();
-            }
-        };
-
-        window.register = async function(name, email, password, age, diabetesTime) {
-            showLoading();
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                currentUser = userCredential.user;
-                await saveUserProfile(currentUser.uid, { name, email, age, diabetesTime });
-                await loadUserProfile(currentUser.uid);
-                document.getElementById('appScreen').classList.add('active');
-                document.getElementById('registerScreen').classList.remove('active');
-                document.getElementById('loginScreen').classList.remove('active');
-                showNotification('Conta criada com sucesso!');
-            } catch (error) {
-                showNotification('Erro ao cadastrar: ' + error.message, 'error');
-            } finally {
-                hideLoading();
-            }
-        };
-
-        window.logout = async function() {
-            await signOut(auth);
-            currentUser = null;
-            document.getElementById('loginScreen').classList.add('active');
-            document.getElementById('appScreen').classList.remove('active');
-            showNotification('Desconectado');
-        };
-
-        window.showRegister = function() {
-            document.getElementById('loginScreen').classList.remove('active');
-            document.getElementById('registerScreen').classList.add('active');
-        };
-
-        window.showLogin = function() {
-            document.getElementById('registerScreen').classList.remove('active');
-            document.getElementById('loginScreen').classList.add('active');
-        };
-
-        // Formulário de Login
-        document.getElementById('loginForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            login(email, password);
-        });
-
-        // Formulário de Cadastro
-        document.getElementById('registerForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('regName').value;
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
-            const age = document.getElementById('regAge').value;
-            const diabetesTime = document.getElementById('regDiabetesTime').value;
-            register(name, email, password, age, diabetesTime);
-        });
-
-        // Formulário de Medição
-        document.getElementById('glucoseForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!currentUser) {
-                showNotification('Faça login primeiro!', 'error');
-                return;
-            }
-            
-            const datetime = document.getElementById('datetime').value;
-            const glucose = parseInt(document.getElementById('glucose').value);
-            const insulin = document.getElementById('insulin').value;
-            const notes = document.getElementById('notes').value;
-            
-            if (!datetime || isNaN(glucose)) {
-                showNotification('Preencha todos os campos!', 'error');
-                return;
-            }
-            
-            if ((glucose > 140 || glucose < 70) && !insulin) {
-                showNotification('Para glicemia alterada, informe a insulina!', 'error');
-                return;
-            }
-            
-            showLoading();
-            try {
-                await saveGlucose({
-                    datetime: datetime.replace('T', ' '),
-                    glucose,
-                    insulin: insulin || null,
-                    notes: notes || ''
-                });
-                
-                await updateUI();
-                document.getElementById('glucoseForm').reset();
-                document.getElementById('insulinGroup').style.display = 'none';
-                
-                const now = new Date();
-                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-                document.getElementById('datetime').value = now.toISOString().slice(0, 16);
-                showNotification('Medição salva com sucesso!');
-            } catch (error) {
-                showNotification('Erro ao salvar: ' + error.message, 'error');
-            } finally {
-                hideLoading();
-            }
-        });
-
-        // Data/hora atual
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        const datetimeInput = document.getElementById('datetime');
-        if (datetimeInput) {
-            datetimeInput.value = now.toISOString().slice(0, 16);
-        }
-
-        // Verificar estado de autenticação
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                await loadUserProfile(user.uid);
-                await updateUI();
-                document.getElementById('appScreen').classList.add('active');
-                document.getElementById('loginScreen').classList.remove('active');
-                document.getElementById('registerScreen').classList.remove('active');
-            }
-        });
-    </script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
