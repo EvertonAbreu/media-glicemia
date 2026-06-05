@@ -14,7 +14,7 @@ function saveData() {
 }
 
 function getWeekday(date) {
-    const weekdays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+    const weekdays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
     return weekdays[date.getDay()];
 }
 
@@ -34,7 +34,7 @@ function updateStats() {
     document.getElementById('uniqueDays').textContent = uniqueDays;
 }
 
-function updateTable() {
+function updateRecordsList() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const statusFilter = document.getElementById('filterStatus').value;
     
@@ -55,27 +55,43 @@ function updateTable() {
         });
     }
     
-    const tbody = document.getElementById('recordsBody');
+    const recordsList = document.getElementById('recordsList');
     
     if (filteredRecords.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhum registro encontrado</td></tr>';
+        recordsList.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <p>Nenhum registro encontrado</p>
+                <small>Adicione sua primeira medição</small>
+            </div>
+        `;
         return;
     }
     
     filteredRecords.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
     
-    tbody.innerHTML = filteredRecords.map(record => {
+    recordsList.innerHTML = filteredRecords.map(record => {
         const status = getGlucoseStatus(record.glucose);
         return `
-            <tr>
-                <td>${record.datetime}</td>
-                <td>${record.weekday}</td>
-                <td><strong>${record.glucose}</strong> mg/dL</td>
-                <td><span class="status ${status.class}">${status.text}</span></td>
-                <td>${record.insulin ? record.insulin + ' U' : '-'}</td>
-                <td>${record.notes || '-'}</td>
-                <td><button class="delete-btn" onclick="deleteRecord('${record.id}')">🗑️</button></td>
-            </tr>
+            <div class="record-item">
+                <div class="record-header">
+                    <div class="record-datetime">
+                        <span>📅</span>
+                        <span>${record.datetime}</span>
+                    </div>
+                    <div class="record-weekday">${record.weekday}</div>
+                </div>
+                <div class="record-values">
+                    <div>
+                        <span class="glucose-value">${record.glucose}</span>
+                        <span class="glucose-unit">mg/dL</span>
+                        <span class="status-badge ${status.class}">${status.text}</span>
+                    </div>
+                    ${record.insulin ? `<div class="insulin-value">💉 ${record.insulin} U</div>` : ''}
+                    <button class="delete-record" onclick="deleteRecord('${record.id}')">🗑️ Excluir</button>
+                </div>
+                ${record.notes ? `<div class="record-notes">📋 ${record.notes}</div>` : ''}
+            </div>
         `;
     }).join('');
 }
@@ -117,7 +133,7 @@ function exportData() {
     
     const dataStr = JSON.stringify(glucoseRecords, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = `diabcare_export_${new Date().toISOString().slice(0,19)}.json`;
+    const exportFileDefaultName = `diabcare_${new Date().toISOString().slice(0,19)}.json`;
     
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -129,13 +145,13 @@ function exportData() {
 
 function updateUI() {
     updateStats();
-    updateTable();
+    updateRecordsList();
 }
 
 document.getElementById('clearFiltersBtn').addEventListener('click', () => {
     document.getElementById('searchInput').value = '';
     document.getElementById('filterStatus').value = 'all';
-    updateTable();
+    updateRecordsList();
 });
 
 document.getElementById('exportBtn').addEventListener('click', exportData);
@@ -156,17 +172,17 @@ document.getElementById('glucoseForm').addEventListener('submit', (e) => {
     const notes = document.getElementById('notes').value;
     
     if (!datetime) {
-        showNotification('Por favor, selecione data e hora!', 'error');
+        showNotification('Selecione data e hora!', 'error');
         return;
     }
     
     if (isNaN(glucose) || glucose < 20 || glucose > 600) {
-        showNotification('Por favor, insira um valor de glicemia válido (20-600 mg/dL)!', 'error');
+        showNotification('Valor de glicemia inválido (20-600 mg/dL)!', 'error');
         return;
     }
     
     if ((glucose > 140 || glucose < 70) && !insulin) {
-        showNotification('Para glicemia alta ou baixa, é obrigatório informar a quantidade de insulina aplicada!', 'error');
+        showNotification('Para glicemia alterada, informe a insulina aplicada!', 'error');
         return;
     }
     
