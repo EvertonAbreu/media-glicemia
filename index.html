@@ -2,130 +2,140 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>DiabCare - Controle de Diabetes</title>
-    <link rel="stylesheet" href="style.css">  <!-- ← CORRIGIDO: sem o 's' -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>DiabCare - Glucose Monitor</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-content">
-                <div class="logo">
-                    <span class="logo-icon">🩸</span>
-                    <h1>DiabCare</h1>
-                </div>
-                <p class="subtitle">Controle Inteligente de Glicemia</p>
-            </div>
+    <div class="app">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 🔋 100%</span>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-info">
-                    <h3>Total</h3>
-                    <div class="stat-value" id="totalCount">0</div>
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-glow"></div>
+            <div class="header-content">
+                <div class="greeting">
+                    <span class="wave">👋</span>
+                    <div>
+                        <h2>Olá,</h2>
+                        <h1>Bem-vindo ao DiabCare</h1>
+                    </div>
+                </div>
+                <div class="header-stats">
+                    <div class="glucose-indicator">
+                        <div class="indicator-ring">
+                            <span class="current-glucose" id="currentGlucose">--</span>
+                            <span class="unit">mg/dL</span>
+                        </div>
+                        <span class="indicator-label">Última medição</span>
+                    </div>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">📈</div>
-                <div class="stat-info">
-                    <h3>Média</h3>
-                    <div class="stat-value" id="avgGlucose">0</div>
-                    <small>mg/dL</small>
+        </header>
+
+        <!-- Stats Cards Modernos -->
+        <div class="stats-modern">
+            <div class="stat-modern-card">
+                <div class="stat-modern-icon">📊</div>
+                <div class="stat-modern-info">
+                    <span class="stat-modern-value" id="totalCount">0</span>
+                    <span class="stat-modern-label">Total</span>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">📅</div>
-                <div class="stat-info">
-                    <h3>Dias</h3>
-                    <div class="stat-value" id="uniqueDays">0</div>
+            <div class="stat-modern-card">
+                <div class="stat-modern-icon">📈</div>
+                <div class="stat-modern-info">
+                    <span class="stat-modern-value" id="avgGlucose">0</span>
+                    <span class="stat-modern-label">Média</span>
+                </div>
+            </div>
+            <div class="stat-modern-card">
+                <div class="stat-modern-icon">🔥</div>
+                <div class="stat-modern-info">
+                    <span class="stat-modern-value" id="uniqueDays">0</span>
+                    <span class="stat-modern-label">Dias</span>
                 </div>
             </div>
         </div>
 
         <!-- Form Section -->
-        <div class="form-card">
-            <div class="card-header">
-                <span class="card-icon">📝</span>
-                <h2>Nova Medição</h2>
+        <div class="form-container">
+            <div class="section-header">
+                <span class="section-icon">➕</span>
+                <h3>Nova Medição</h3>
             </div>
             
-            <form id="glucoseForm">
-                <div class="form-group">
-                    <label>
-                        <span class="label-icon">📅</span>
-                        Data e Hora
-                    </label>
+            <form id="glucoseForm" class="modern-form">
+                <div class="input-group">
+                    <label>📅 Data e Hora</label>
                     <input type="datetime-local" id="datetime" required>
                 </div>
                 
-                <div class="form-group">
-                    <label>
-                        <span class="label-icon">🩸</span>
-                        Glicemia (mg/dL)
-                    </label>
-                    <input type="number" id="glucose" required step="1" placeholder="Ex: 120">
-                    <div class="input-hint">Valores normais: 70-140 mg/dL</div>
+                <div class="input-group">
+                    <label>🩸 Glicemia (mg/dL)</label>
+                    <input type="number" id="glucose" required step="1" placeholder="Digite o valor">
+                    <div class="range-indicator">
+                        <div class="range-bar">
+                            <div class="range-low">Baixo</div>
+                            <div class="range-normal">Normal</div>
+                            <div class="range-high">Alto</div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="form-group" id="insulinGroup" style="display: none;">
-                    <label>
-                        <span class="label-icon">💉</span>
-                        Insulina Aplicada (unidades)
-                    </label>
-                    <input type="number" id="insulin" step="0.5" placeholder="Quantidade de insulina">
+                <div class="input-group slide-down" id="insulinGroup" style="display: none;">
+                    <label>💉 Insulina (unidades)</label>
+                    <div class="insulin-input">
+                        <button type="button" class="insulin-dec">-</button>
+                        <input type="number" id="insulin" step="0.5" value="0">
+                        <button type="button" class="insulin-inc">+</button>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label>
-                        <span class="label-icon">📋</span>
-                        Observações
-                    </label>
-                    <textarea id="notes" rows="3" placeholder="Sintomas, alimentação, exercícios..."></textarea>
+                <div class="input-group">
+                    <label>📝 Observações</label>
+                    <textarea id="notes" rows="2" placeholder="Como você está se sentindo?"></textarea>
                 </div>
                 
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="submit-btn">
                     <span>💾</span> Salvar Medição
                 </button>
             </form>
         </div>
 
-        <!-- Records Section -->
-        <div class="records-card">
-            <div class="card-header">
-                <span class="card-icon">📊</span>
-                <h2>Histórico de Medições</h2>
+        <!-- History Section -->
+        <div class="history-container">
+            <div class="section-header">
+                <span class="section-icon">📋</span>
+                <h3>Histórico</h3>
+                <button id="exportBtn" class="icon-btn">📥</button>
             </div>
             
             <!-- Filters -->
-            <div class="filters-bar">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="searchInput" placeholder="Buscar por data...">
+            <div class="filter-modern">
+                <div class="search-modern">
+                    <span>🔍</span>
+                    <input type="text" id="searchInput" placeholder="Buscar...">
                 </div>
-                
-                <select id="filterStatus" class="filter-select">
-                    <option value="all">📊 Todos</option>
-                    <option value="high">⚠️ Alta (>140)</option>
-                    <option value="normal">✅ Normal (70-140)</option>
-                    <option value="low">⚠️ Baixa (<70)</option>
-                </select>
-                
-                <div class="action-buttons">
-                    <button id="clearFiltersBtn" class="btn-secondary">🗑️ Limpar</button>
-                    <button id="exportBtn" class="btn-success">📥 Exportar</button>
+                <div class="filter-chips" id="filterChips">
+                    <button class="chip active" data-filter="all">Todos</button>
+                    <button class="chip" data-filter="high">⚠️ Alta</button>
+                    <button class="chip" data-filter="normal">✅ Normal</button>
+                    <button class="chip" data-filter="low">⚠️ Baixa</button>
                 </div>
             </div>
             
             <!-- Records List -->
-            <div class="records-list" id="recordsList">
-                <div class="empty-state">
-                    <div class="empty-icon">📭</div>
-                    <p>Nenhum registro encontrado</p>
-                    <small>Adicione sua primeira medição</small>
+            <div class="records-timeline" id="recordsList">
+                <div class="empty-modern">
+                    <div class="empty-animation">📭</div>
+                    <p>Nenhuma medição registrada</p>
+                    <small>Comece adicionando sua primeira medição</small>
                 </div>
             </div>
         </div>
