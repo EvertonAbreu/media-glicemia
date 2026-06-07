@@ -6,7 +6,7 @@
     <title>DiabCare - Controle de Diabetes</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -76,95 +76,212 @@
             </div>
         </div>
 
-        <!-- Tela Principal -->
+        <!-- Tela Principal do App com Bottom Navigation -->
         <div id="appScreen" class="screen">
-            <div class="app-header">
-                <div class="user-info">
-                    <div class="user-name" id="userName">Carregando...</div>
-                    <button class="btn-danger" onclick="logout()">Sair</button>
-                </div>
-                <div class="glucose-circle">
-                    <div class="circle">
-                        <span class="current-glucose" id="currentGlucose">--</span>
-                        <span style="font-size: 12px;">mg/dL</span>
+            <!-- Conteúdo Principal -->
+            <div class="main-content">
+                <!-- Tela Início -->
+                <div id="homeScreen" class="tab-content active">
+                    <div class="app-header">
+                        <div class="user-info">
+                            <div class="welcome-text">
+                                <span class="greeting">Olá,</span>
+                                <div class="user-name" id="userName">Carregando...</div>
+                            </div>
+                            <button class="logout-btn" onclick="logout()">Sair</button>
+                        </div>
+                        <div class="glucose-circle">
+                            <div class="circle">
+                                <span class="current-glucose" id="currentGlucose">--</span>
+                                <span class="glucose-unit">mg/dL</span>
+                            </div>
+                            <div class="last-reading">Última medição</div>
+                        </div>
                     </div>
-                    <div style="margin-top: 10px; font-size: 12px;">Última medição</div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="totalCount">0</div>
+                                <div class="stat-label">Total</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📈</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="avgGlucose">0</div>
+                                <div class="stat-label">Média</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📅</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="diabetesTime">0</div>
+                                <div class="stat-label">Anos com Diabetes</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-tips">
+                        <h4>💡 Dica do Dia</h4>
+                        <p id="dailyTip">Manter a glicemia controlada ajuda a prevenir complicações!</p>
+                    </div>
+                </div>
+
+                <!-- Tela Nova Medição -->
+                <div id="newScreen" class="tab-content">
+                    <div class="form-card">
+                        <div class="form-header">
+                            <span class="form-icon">📝</span>
+                            <h2>Nova Medição</h2>
+                        </div>
+                        <form id="glucoseForm">
+                            <div class="input-group">
+                                <label>📅 Data e Hora</label>
+                                <input type="datetime-local" id="datetime" required>
+                            </div>
+                            <div class="input-group">
+                                <label>🩸 Glicemia (mg/dL)</label>
+                                <input type="number" id="glucose" required step="1" placeholder="Ex: 120">
+                                <div class="range-hint">
+                                    <span class="low">Baixo &lt;70</span>
+                                    <span class="normal">Normal 70-140</span>
+                                    <span class="high">Alto &gt;140</span>
+                                </div>
+                            </div>
+                            <div class="input-group slide-down" id="insulinGroup" style="display: none;">
+                                <label>💉 Insulina (unidades)</label>
+                                <div class="insulin-input-wrapper">
+                                    <button type="button" class="insulin-dec">-</button>
+                                    <input type="number" id="insulin" step="0.5" value="0">
+                                    <button type="button" class="insulin-inc">+</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>📋 Observações</label>
+                                <textarea id="notes" rows="3" placeholder="Sintomas, alimentação, exercícios..."></textarea>
+                            </div>
+                            <button type="submit" class="btn-submit">
+                                <span>💾</span> Salvar Medição
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tela Histórico -->
+                <div id="historyScreen" class="tab-content">
+                    <div class="history-header">
+                        <h2>📊 Histórico de Medições</h2>
+                    </div>
+                    
+                    <!-- Filtros Avançados -->
+                    <div class="filters-advanced">
+                        <div class="filter-group">
+                            <label>📅 Período</label>
+                            <div class="filter-buttons">
+                                <button class="filter-chip active" data-filter="day">Hoje</button>
+                                <button class="filter-chip" data-filter="week">Semana</button>
+                                <button class="filter-chip" data-filter="month">Mês</button>
+                                <button class="filter-chip" data-filter="all">Todos</button>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label>🏷️ Status</label>
+                            <div class="filter-buttons">
+                                <button class="status-chip active" data-status="all">Todos</button>
+                                <button class="status-chip" data-status="high">Alta</button>
+                                <button class="status-chip" data-status="normal">Normal</button>
+                                <button class="status-chip" data-status="low">Baixa</button>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-actions">
+                            <input type="text" id="searchInput" placeholder="🔍 Buscar por data..." class="search-input">
+                            <button id="exportPDFBtn" class="btn-export">📄 Exportar PDF</button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table class="records-table">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Dia</th>
+                                    <th>Glicemia</th>
+                                    <th>Status</th>
+                                    <th>Insulina</th>
+                                    <th>Obs</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsList">
+                                <tr><td colspan="7" class="empty-state">📭 Nenhum registro encontrado</td</tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tela Perfil -->
+                <div id="profileScreen" class="tab-content">
+                    <div class="profile-header">
+                        <div class="profile-avatar">🩸</div>
+                        <h2 id="profileName">Carregando...</h2>
+                        <p id="profileEmail">email@exemplo.com</p>
+                    </div>
+                    
+                    <div class="profile-stats">
+                        <div class="profile-stat-item">
+                            <div class="profile-stat-value" id="profileAge">-</div>
+                            <div class="profile-stat-label">Idade</div>
+                        </div>
+                        <div class="profile-stat-item">
+                            <div class="profile-stat-value" id="profileDiabetesTime">-</div>
+                            <div class="profile-stat-label">Anos com Diabetes</div>
+                        </div>
+                        <div class="profile-stat-item">
+                            <div class="profile-stat-value" id="profileTotalReadings">-</div>
+                            <div class="profile-stat-label">Total de Leituras</div>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-info-card">
+                        <h3>📋 Informações da Conta</h3>
+                        <div class="info-row">
+                            <span>Membro desde:</span>
+                            <strong id="memberSince">-</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>Último acesso:</span>
+                            <strong id="lastLogin">-</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <button class="btn-logout" onclick="logout()">🚪 Sair da Conta</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-value" id="totalCount">0</div>
-                    <div class="stat-label">Total</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="avgGlucose">0</div>
-                    <div class="stat-label">Média</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="diabetesTime">0</div>
-                    <div class="stat-label">Anos com Diabetes</div>
-                </div>
-            </div>
-
-            <!-- Filtros de Período -->
-            <div class="filters-card">
-                <h3>📅 Filtros</h3>
-                <div class="filter-buttons">
-                    <button class="filter-btn active" data-filter="day">Hoje</button>
-                    <button class="filter-btn" data-filter="week">Esta Semana</button>
-                    <button class="filter-btn" data-filter="month">Este Mês</button>
-                    <button class="filter-btn" data-filter="all">Todos</button>
-                </div>
-                <div class="export-buttons">
-                    <button id="exportPDFBtn" class="btn-pdf">📄 Exportar PDF</button>
-                </div>
-            </div>
-
-            <div class="form-card">
-                <h3 style="margin-bottom: 15px;">📝 Nova Medição</h3>
-                <form id="glucoseForm">
-                    <div class="input-group">
-                        <label>📅 Data e Hora</label>
-                        <input type="datetime-local" id="datetime" required>
-                    </div>
-                    <div class="input-group">
-                        <label>🩸 Glicemia (mg/dL)</label>
-                        <input type="number" id="glucose" required step="1" placeholder="Ex: 120">
-                    </div>
-                    <div class="input-group" id="insulinGroup" style="display: none;">
-                        <label>💉 Insulina (unidades)</label>
-                        <input type="number" id="insulin" step="0.5" placeholder="Quantidade">
-                    </div>
-                    <div class="input-group">
-                        <label>📋 Observações</label>
-                        <textarea id="notes" rows="2" placeholder="Sintomas, alimentação..."></textarea>
-                    </div>
-                    <button type="submit" class="btn-primary">💾 Salvar Medição</button>
-                </form>
-            </div>
-
-            <div class="history-card">
-                <h3 style="margin-bottom: 15px;">📊 Histórico</h3>
-                <div class="table-container">
-                    <table class="records-table" id="recordsTable">
-                        <thead>
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Dia</th>
-                                <th>Glicemia</th>
-                                <th>Status</th>
-                                <th>Insulina</th>
-                                <th>Observações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recordsList">
-                            <tr>
-                                <td colspan="6" style="text-align: center;">📭 Nenhum registro ainda</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <!-- Bottom Navigation -->
+            <div class="bottom-nav">
+                <button class="nav-item active" data-tab="home">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">Início</span>
+                </button>
+                <button class="nav-item" data-tab="new">
+                    <span class="nav-icon">➕</span>
+                    <span class="nav-label">Nova</span>
+                </button>
+                <button class="nav-item" data-tab="history">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Histórico</span>
+                </button>
+                <button class="nav-item" data-tab="profile">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-label">Perfil</span>
+                </button>
             </div>
         </div>
     </div>
