@@ -1,7 +1,7 @@
 // Firebase SDKs
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -20,7 +20,21 @@ const db = getFirestore(app);
 
 let currentUser = null;
 let allRecords = [];
-let currentFilter = 'day';
+let currentPeriodFilter = 'day';
+let currentStatusFilter = 'all';
+let searchTerm = '';
+
+// Dicas do dia
+const tips = [
+    "Beba água regularmente para ajudar no controle glicêmico.",
+    "Pratique exercícios físicos regularmente com orientação médica.",
+    "Mantenha uma alimentação balanceada e rica em fibras.",
+    "Monitore sua glicemia nos horários recomendados pelo médico.",
+    "Nunca pule refeições para evitar hipoglicemia.",
+    "Durma bem - o sono afeta diretamente os níveis de glicose.",
+    "Mantenha seus medicamentos sempre organizados.",
+    "Faça o acompanhamento regular com sua equipe de saúde."
+];
 
 function showLoading() {
     document.getElementById('loading').style.display = 'flex';
@@ -32,15 +46,27 @@ function hideLoading() {
 
 function showNotification(message, type = 'success') {
     const notification = document.createElement('div');
-    notification.className = 'notification';
+    notification.className = `notification ${type}`;
     notification.textContent = message;
-    notification.style.background = type === 'success' ? '#28a745' : '#dc3545';
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 3000);
 }
 
+// Atualizar dica do dia
+function updateDailyTip() {
+    const today = new Date().getDate();
+    const tipIndex = today % tips.length;
+    const tipElement = document.getElementById('dailyTip');
+    if (tipElement) tipElement.textContent = tips[tipIndex];
+}
+
+// Perfil
 async function saveUserProfile(userId, profileData) {
-    await setDoc(doc(db, "users", userId), profileData);
+    await setDoc(doc(db, "users", userId), {
+        ...profileData,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+    });
 }
 
 async function loadUserProfile(userId) {
@@ -50,9 +76,18 @@ async function loadUserProfile(userId) {
         const data = docSnap.data();
         document.getElementById('userName').textContent = data.name;
         document.getElementById('diabetesTime').textContent = data.diabetesTime || 0;
+        document.getElementById('profileName').textContent = data.name;
+        document.getElementById('profileEmail').textContent = data.email;
+        document.getElementById('profileAge').textContent = data.age + ' anos';
+        document.getElementById('profileDiabetesTime').textContent = data.diabetesTime + ' anos';
+        
+        const memberSince = data.createdAt ? new Date(data.createdAt).toLocaleDateString('pt-BR') : 'Recentemente';
+        document.getElementById('memberSince').textContent = memberSince;
+        document.getElementById('lastLogin').textContent = new Date().toLocaleDateString('pt-BR');
     }
 }
 
+// Medições
 async function saveGlucose(record) {
     if (!currentUser) return;
     await addDoc(collection(db, "users", currentUser.uid, "glucose"), {
@@ -73,7 +108,13 @@ async function loadGlucose() {
         records.push({ id: doc.id, ...doc.data() });
     });
     allRecords = records;
+    document.getElementById('profileTotalReadings').textContent = records.length;
     return records;
+}
+
+async function deleteGlucose(recordId) {
+    if (!currentUser) return;
+    await deleteDoc(doc(db, "users", currentUser.uid, "glucose", recordId));
 }
 
 function filterRecordsByPeriod(records, period) {
@@ -105,6 +146,21 @@ function filterRecordsByPeriod(records, period) {
     }
 }
 
+function filterRecordsByStatus(records, status) {
+    if (status === 'all') return records;
+    if (status === 'high') return records.filter(r => r.glucose > 140);
+    if (status === 'normal') return records.filter(r => r.glucose >= 70 && r.glucose <= 140);
+    if (status === 'low') return records.filter(r => r.glucose < 70);
+    return records;
+}
+
+function filterRecordsBySearch(records, search) {
+    if (!search) return records;
+    return records.filter(record => 
+        record.datetime.toLowerCase().includes(search.toLowerCase())
+    );
+}
+
 function updateStats(records) {
     const total = records.length;
     const avgGlucose = total > 0 ? (records.reduce((sum, r) => sum + r.glucose, 0) / total).toFixed(0) : 0;
@@ -113,31 +169,32 @@ function updateStats(records) {
     document.getElementById('avgGlucose').textContent = avgGlucose;
 }
 
-function updateTable(records) {
+async function updateTable() {
+    let filtered = filterRecordsByPeriod(allRecords, currentPeriodFilter);
+    filtered = filterRecordsByStatus(filtered, currentStatusFilter);
+    filtered = filterRecordsBySearch(filtered, searchTerm);
+    
+    updateStats(filtered);
+    
     const recordsList = document.getElementById('recordsList');
-    const filteredRecords = filterRecordsByPeriod(records, currentFilter);
-    
-    updateStats(filteredRecords);
-    
-    if (filteredRecords.length === 0) {
-        recordsList.innerHTML = '<tr><td colspan="6" style="text-align: center;">📭 Nenhum registro neste período</td></tr>';
+    if (filtered.length === 0) {
+        recordsList.innerHTML = '<tr><td colspan="7" class="empty-state">📭 Nenhum registro encontrado</td></tr>';
         return;
     }
     
-    recordsList.innerHTML = filteredRecords.map(record => {
+    recordsList.innerHTML = filtered.map(record => {
         let statusClass = '', statusText = '';
         if (record.glucose > 140) {
             statusClass = 'badge-high';
-            statusText = 'Alta ⚠️';
+            statusText = 'Alta';
         } else if (record.glucose < 70) {
             statusClass = 'badge-low';
-            statusText = 'Baixa ⚠️';
+            statusText = 'Baixa';
         } else {
             statusClass = 'badge-normal';
-            statusText = 'Normal ✓';
+            statusText = 'Normal';
         }
         
-        // Extrair dia da semana
         const dateStr = record.datetime.split(' ')[0];
         const date = new Date(dateStr);
         const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -150,10 +207,19 @@ function updateTable(records) {
                 <td><strong>${record.glucose}</strong> mg/dL</td>
                 <td><span class="badge ${statusClass}">${statusText}</span></td>
                 <td>${record.insulin ? record.insulin + ' U' : '-'}</td>
-                <td>${record.notes || '-'}</td>
+                <td>${record.notes ? record.notes.substring(0, 20) : '-'}</td>
+                <td><button class="delete-btn" onclick="deleteRecord('${record.id}')">🗑️</button></td>
             </tr>
         `;
     }).join('');
+}
+
+window.deleteRecord = async function(id) {
+    if (confirm('Tem certeza que deseja excluir esta medição?')) {
+        await deleteGlucose(id);
+        await updateUI();
+        showNotification('Medição excluída!');
+    }
 }
 
 async function exportToPDF() {
@@ -164,13 +230,13 @@ async function exportToPDF() {
     
     showLoading();
     
-    const filteredRecords = filterRecordsByPeriod(allRecords, currentFilter);
+    let filtered = filterRecordsByPeriod(allRecords, currentPeriodFilter);
+    filtered = filterRecordsByStatus(filtered, currentStatusFilter);
+    filtered = filterRecordsBySearch(filtered, searchTerm);
+    
     const periodText = {
-        'day': 'Hoje',
-        'week': 'Esta Semana',
-        'month': 'Este Mês',
-        'all': 'Todo Período'
-    }[currentFilter];
+        'day': 'Hoje', 'week': 'Esta Semana', 'month': 'Este Mês', 'all': 'Todo Período'
+    }[currentPeriodFilter];
     
     const userProfile = await getDoc(doc(db, "users", currentUser.uid));
     const userName = userProfile.exists() ? userProfile.data().name : 'Usuário';
@@ -182,58 +248,18 @@ async function exportToPDF() {
             <meta charset="UTF-8">
             <title>Relatório DiabCare</title>
             <style>
-                body {
-                    font-family: 'Inter', sans-serif;
-                    padding: 40px;
-                }
-                .header {
-                    text-align: center;
-                    margin-bottom: 30px;
-                    border-bottom: 2px solid #667eea;
-                    padding-bottom: 20px;
-                }
-                .logo {
-                    font-size: 2em;
-                }
-                h1 {
-                    color: #667eea;
-                }
-                .info {
-                    margin-bottom: 20px;
-                    padding: 15px;
-                    background: #f8f9fa;
-                    border-radius: 10px;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-top: 20px;
-                }
-                th, td {
-                    border: 1px solid #ddd;
-                    padding: 10px;
-                    text-align: left;
-                }
-                th {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                }
-                .badge {
-                    padding: 3px 8px;
-                    border-radius: 12px;
-                    font-size: 0.8em;
-                }
+                body { font-family: 'Inter', sans-serif; padding: 40px; }
+                .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #667eea; padding-bottom: 20px; }
+                .logo { font-size: 2em; }
+                h1 { color: #667eea; }
+                .info { margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                th { background: #667eea; color: white; }
                 .badge-high { background: #fee; color: #c00; }
                 .badge-low { background: #ffe6e6; color: #ff6b6b; }
                 .badge-normal { background: #e6f7e6; color: #28a745; }
-                .footer {
-                    margin-top: 30px;
-                    text-align: center;
-                    font-size: 0.8em;
-                    color: #999;
-                    border-top: 1px solid #ddd;
-                    padding-top: 20px;
-                }
+                .footer { margin-top: 30px; text-align: center; font-size: 0.8em; color: #999; }
             </style>
         </head>
         <body>
@@ -242,78 +268,31 @@ async function exportToPDF() {
                 <h1>DiabCare - Relatório de Glicemia</h1>
                 <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
             </div>
-            
             <div class="info">
                 <p><strong>Paciente:</strong> ${userName}</p>
                 <p><strong>Período:</strong> ${periodText}</p>
-                <p><strong>Total de medições:</strong> ${filteredRecords.length}</p>
-                <p><strong>Média de glicemia:</strong> ${(filteredRecords.reduce((sum, r) => sum + r.glucose, 0) / filteredRecords.length).toFixed(0)} mg/dL</p>
+                <p><strong>Total de medições:</strong> ${filtered.length}</p>
+                <p><strong>Média de glicemia:</strong> ${(filtered.reduce((sum, r) => sum + r.glucose, 0) / filtered.length).toFixed(0)} mg/dL</p>
             </div>
-            
             <table>
-                <thead>
-                    <tr>
-                        <th>Data/Hora</th>
-                        <th>Dia</th>
-                        <th>Glicemia</th>
-                        <th>Status</th>
-                        <th>Insulina</th>
-                        <th>Observações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${filteredRecords.map(record => {
-                        let statusClass = '', statusText = '';
-                        if (record.glucose > 140) {
-                            statusClass = 'badge-high';
-                            statusText = 'Alta';
-                        } else if (record.glucose < 70) {
-                            statusClass = 'badge-low';
-                            statusText = 'Baixa';
-                        } else {
-                            statusClass = 'badge-normal';
-                            statusText = 'Normal';
-                        }
-                        
-                        const dateStr = record.datetime.split(' ')[0];
-                        const date = new Date(dateStr);
-                        const weekdays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-                        const weekday = weekdays[date.getDay()];
-                        
-                        return `
-                            <tr>
-                                <td>${record.datetime}</td>
-                                <td>${weekday}</td>
-                                <td><strong>${record.glucose}</strong> mg/dL</td>
-                                <td><span class="badge ${statusClass}">${statusText}</span></td>
-                                <td>${record.insulin ? record.insulin + ' U' : '-'}</td>
-                                <td>${record.notes || '-'}</td>
-                            </tr>
-                        `;
-                    }).join('')}
-                </tbody>
+                <thead><tr><th>Data/Hora</th><th>Glicemia</th><th>Status</th><th>Insulina</th><th>Observações</th></tr></thead>
+                <tbody>${filtered.map(record => {
+                    let statusText = record.glucose > 140 ? 'Alta' : (record.glucose < 70 ? 'Baixa' : 'Normal');
+                    return `<tr><td>${record.datetime}</td><td>${record.glucose} mg/dL</td><td>${statusText}</td><td>${record.insulin ? record.insulin + ' U' : '-'}</td><td>${record.notes || '-'}</td></tr>`;
+                }).join('')}</tbody>
             </table>
-            
-            <div class="footer">
-                <p>Relatório gerado pelo DiabCare - Sistema de Controle de Diabetes</p>
-            </div>
+            <div class="footer"><p>Relatório gerado pelo DiabCare - Sistema de Controle de Diabetes</p></div>
         </body>
         </html>
     `;
     
-    const opt = {
-        margin: [0.5, 0.5, 0.5, 0.5],
-        filename: `diabcare_relatorio_${new Date().toISOString().slice(0,19)}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, letterRendering: true },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    };
+    const opt = { margin: [0.5, 0.5, 0.5, 0.5], filename: `diabcare_${new Date().toISOString().slice(0,19)}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
     
     try {
         html2pdf().set(opt).from(pdfContent).save();
         showNotification('PDF gerado com sucesso!');
     } catch (error) {
-        showNotification('Erro ao gerar PDF: ' + error.message, 'error');
+        showNotification('Erro ao gerar PDF', 'error');
     } finally {
         hideLoading();
     }
@@ -322,37 +301,71 @@ async function exportToPDF() {
 async function updateUI() {
     if (!currentUser) return;
     await loadGlucose();
-    updateTable(allRecords);
+    await updateTable();
     
     if (allRecords.length > 0) {
         document.getElementById('currentGlucose').textContent = allRecords[0].glucose;
-    } else {
-        document.getElementById('currentGlucose').textContent = '--';
     }
 }
 
+// Navegação por abas
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.getElementById(`${tabId}Screen`).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelector(`.nav-item[data-tab="${tabId}"]`).classList.add('active');
+}
+
 // Eventos de filtro
-document.querySelectorAll('.filter-btn').forEach(btn => {
+document.querySelectorAll('.filter-chip').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
-        updateTable(allRecords);
+        currentPeriodFilter = btn.dataset.filter;
+        updateTable();
     });
 });
 
-// Evento para mostrar campo de insulina
+document.querySelectorAll('.status-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.status-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentStatusFilter = btn.dataset.status;
+        updateTable();
+    });
+});
+
+document.getElementById('searchInput')?.addEventListener('input', (e) => {
+    searchTerm = e.target.value;
+    updateTable();
+});
+
+// Insulin increment/decrement
+document.querySelector('.insulin-dec')?.addEventListener('click', () => {
+    const input = document.getElementById('insulin');
+    const value = parseFloat(input.value) || 0;
+    if (value > 0) input.value = value - 0.5;
+});
+
+document.querySelector('.insulin-inc')?.addEventListener('click', () => {
+    const input = document.getElementById('insulin');
+    const value = parseFloat(input.value) || 0;
+    input.value = value + 0.5;
+});
+
+// Mostrar campo de insulina
 document.getElementById('glucose')?.addEventListener('input', (e) => {
     const value = parseInt(e.target.value);
     const insulinGroup = document.getElementById('insulinGroup');
     if (!isNaN(value) && (value > 140 || value < 70)) {
         insulinGroup.style.display = 'block';
+        insulinGroup.classList.add('slide-down');
     } else {
         insulinGroup.style.display = 'none';
     }
 });
 
-// Funções globais
+// Funções de autenticação
 window.login = async function(email, password) {
     showLoading();
     try {
@@ -362,7 +375,6 @@ window.login = async function(email, password) {
         await updateUI();
         document.getElementById('appScreen').classList.add('active');
         document.getElementById('loginScreen').classList.remove('active');
-        document.getElementById('registerScreen').classList.remove('active');
         showNotification('Bem-vindo de volta!');
     } catch (error) {
         showNotification('Erro ao entrar: ' + error.message, 'error');
@@ -376,7 +388,6 @@ window.register = async function(name, email, password, confirmPassword, age, di
         showNotification('As senhas não coincidem!', 'error');
         return;
     }
-    
     if (password.length < 6) {
         showNotification('A senha deve ter no mínimo 6 caracteres!', 'error');
         return;
@@ -390,7 +401,6 @@ window.register = async function(name, email, password, confirmPassword, age, di
         await loadUserProfile(currentUser.uid);
         document.getElementById('appScreen').classList.add('active');
         document.getElementById('registerScreen').classList.remove('active');
-        document.getElementById('loginScreen').classList.remove('active');
         showNotification('Conta criada com sucesso!');
     } catch (error) {
         showNotification('Erro ao cadastrar: ' + error.message, 'error');
@@ -417,27 +427,33 @@ window.showLogin = function() {
     document.getElementById('loginScreen').classList.add('active');
 };
 
+// Navegação
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+        switchTab(item.dataset.tab);
+    });
+});
+
 // Export PDF
 document.getElementById('exportPDFBtn')?.addEventListener('click', exportToPDF);
 
 // Formulário de Login
 document.getElementById('loginForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    login(email, password);
+    login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
 });
 
 // Formulário de Cadastro
 document.getElementById('registerForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
-    const name = document.getElementById('regName').value;
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPassword').value;
-    const confirmPassword = document.getElementById('regConfirmPassword').value;
-    const age = document.getElementById('regAge').value;
-    const diabetesTime = document.getElementById('regDiabetesTime').value;
-    register(name, email, password, confirmPassword, age, diabetesTime);
+    register(
+        document.getElementById('regName').value,
+        document.getElementById('regEmail').value,
+        document.getElementById('regPassword').value,
+        document.getElementById('regConfirmPassword').value,
+        document.getElementById('regAge').value,
+        document.getElementById('regDiabetesTime').value
+    );
 });
 
 // Formulário de Medição
@@ -458,11 +474,6 @@ document.getElementById('glucoseForm')?.addEventListener('submit', async (e) => 
         return;
     }
     
-    if (glucose < 20 || glucose > 600) {
-        showNotification('Valor de glicemia inválido (20-600 mg/dL)!', 'error');
-        return;
-    }
-    
     if ((glucose > 140 || glucose < 70) && !insulin) {
         showNotification('Para glicemia alterada, informe a insulina!', 'error');
         return;
@@ -480,13 +491,14 @@ document.getElementById('glucoseForm')?.addEventListener('submit', async (e) => 
         await updateUI();
         document.getElementById('glucoseForm').reset();
         document.getElementById('insulinGroup').style.display = 'none';
+        switchTab('history');
         
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         document.getElementById('datetime').value = now.toISOString().slice(0, 16);
         showNotification('Medição salva com sucesso!');
     } catch (error) {
-        showNotification('Erro ao salvar: ' + error.message, 'error');
+        showNotification('Erro ao salvar', 'error');
     } finally {
         hideLoading();
     }
@@ -496,11 +508,12 @@ document.getElementById('glucoseForm')?.addEventListener('submit', async (e) => 
 const now = new Date();
 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
 const datetimeInput = document.getElementById('datetime');
-if (datetimeInput) {
-    datetimeInput.value = now.toISOString().slice(0, 16);
-}
+if (datetimeInput) datetimeInput.value = now.toISOString().slice(0, 16);
 
-// Verificar estado de autenticação
+// Dica do dia
+updateDailyTip();
+
+// Verificar autenticação
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -508,6 +521,5 @@ onAuthStateChanged(auth, async (user) => {
         await updateUI();
         document.getElementById('appScreen').classList.add('active');
         document.getElementById('loginScreen').classList.remove('active');
-        document.getElementById('registerScreen').classList.remove('active');
     }
 });
