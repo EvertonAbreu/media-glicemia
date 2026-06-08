@@ -1,11 +1,10 @@
-
 import { getRecords } from './database.js';
 
 let glucoseChart = null;
 
 export function initChart() {
     const ctx = document.getElementById('glucoseChart')?.getContext('2d');
-    if (!ctx) return;
+    if (!ctx || glucoseChart) return;
     
     glucoseChart = new Chart(ctx, {
         type: 'line',
@@ -37,8 +36,13 @@ export function initChart() {
         options: {
             responsive: true,
             maintainAspectRatio: true,
-            plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } },
-            scales: { y: { min: 0, max: 300, title: { display: true, text: 'mg/dL' } } }
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+                y: { min: 0, max: 300, title: { display: true, text: 'mg/dL' } }
+            }
         }
     });
 }
@@ -86,17 +90,34 @@ export function updateGoalProgress() {
 export function generateHealthInsights() {
     const records = getRecords();
     const insights = [];
-    const last7Days = records.slice(0, 7);
-    const avgGlucose = last7Days.length > 0 ? last7Days.reduce((sum, r) => sum + r.glucose, 0) / last7Days.length : 0;
     
-    if (avgGlucose > 140) insights.push('Sua glicemia média está acima do ideal. Considere revisar alimentação e medicação.');
-    else if (avgGlucose < 70) insights.push('Sua glicemia média está baixa. Mantenha lanches por perto.');
-    else insights.push('Ótimo! Sua glicemia média está dentro da meta.');
+    if (records.length === 0) {
+        const insightsList = document.getElementById('healthInsights');
+        if (insightsList) insightsList.innerHTML = '<li>Adicione medições para receber insights personalizados</li>';
+        return;
+    }
+    
+    const last7Days = records.slice(0, 7);
+    const avgGlucose = last7Days.reduce((sum, r) => sum + r.glucose, 0) / last7Days.length;
+    
+    if (avgGlucose > 140) {
+        insights.push('Sua glicemia média está acima do ideal. Considere revisar alimentação e medicação.');
+    } else if (avgGlucose < 70) {
+        insights.push('Sua glicemia média está baixa. Mantenha lanches por perto e evite pular refeições.');
+    } else {
+        insights.push('Ótimo! Sua glicemia média está dentro da meta.');
+    }
     
     const values = records.slice(0, 30).map(r => r.glucose);
     const max = Math.max(...values);
     const min = Math.min(...values);
-    if (max - min > 100) insights.push('📊 Grande variação glicêmica detectada. Procure manter horários regulares.');
+    if (max - min > 100) {
+        insights.push('📊 Grande variação glicêmica detectada. Procure manter horários regulares de alimentação.');
+    }
+    
+    if (records.length > 0 && records[0].glucose > 180) {
+        insights.push('🚨 Última medição muito alta. Verifique se a insulina foi aplicada corretamente.');
+    }
     
     const insightsList = document.getElementById('healthInsights');
     if (insightsList) {
@@ -126,7 +147,13 @@ export function updateWeeklySummary() {
             else if (avg < 70) status = '🟡 Baixa';
             else if (avg !== '-') status = '🟢 Normal';
             
-            return `<div class="day-summary"><span class="day-name">${day}</span><span class="day-glucose">${avg !== '-' ? avg + ' mg/dL' : 'Sem dados'}</span><span class="day-status">${status}</span></div>`;
+            return `
+                <div class="day-summary">
+                    <span class="day-name">${day}</span>
+                    <span class="day-glucose">${avg !== '-' ? avg + ' mg/dL' : 'Sem dados'}</span>
+                    <span class="day-status">${status}</span>
+                </div>
+            `;
         }).join('');
     }
 }
