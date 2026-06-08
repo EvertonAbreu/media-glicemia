@@ -1,5 +1,5 @@
-
-import { getRecords, loadGlucose, deleteGlucose } from './database.js';
+import { getRecords, loadGlucose, deleteGlucose, setRecords } from './database.js';
+import { getCurrentUser } from './auth.js';
 
 let currentPeriodFilter = 'day';
 let currentStatusFilter = 'all';
@@ -7,18 +7,23 @@ let searchTerm = '';
 
 const tips = [
     "Beba água regularmente para ajudar no controle glicêmico.",
-    "Pratique exercícios físicos regularmente.",
-    "Mantenha uma alimentação balanceada.",
-    "Monitore sua glicemia nos horários recomendados.",
-    "Nunca pule refeições para evitar hipoglicemia."
+    "Pratique exercícios físicos regularmente com orientação médica.",
+    "Mantenha uma alimentação balanceada e rica em fibras.",
+    "Monitore sua glicemia nos horários recomendados pelo médico.",
+    "Nunca pule refeições para evitar hipoglicemia.",
+    "Durma bem - o sono afeta diretamente os níveis de glicose.",
+    "Mantenha seus medicamentos sempre organizados.",
+    "Faça o acompanhamento regular com sua equipe de saúde."
 ];
 
 export function showLoading() {
-    document.getElementById('loading').style.display = 'flex';
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'flex';
 }
 
 export function hideLoading() {
-    document.getElementById('loading').style.display = 'none';
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'none';
 }
 
 export function showNotification(message, type = 'success') {
@@ -30,7 +35,8 @@ export function showNotification(message, type = 'success') {
 }
 
 export function updateDailyTip() {
-    const tipIndex = new Date().getDate() % tips.length;
+    const today = new Date().getDate();
+    const tipIndex = today % tips.length;
     const tipElement = document.getElementById('dailyTip');
     if (tipElement) tipElement.textContent = tips[tipIndex];
 }
@@ -71,8 +77,12 @@ function filterRecordsBySearch(records, search) {
 function updateStats(records) {
     const total = records.length;
     const avg = total > 0 ? (records.reduce((sum, r) => sum + r.glucose, 0) / total).toFixed(0) : 0;
-    document.getElementById('totalCount').textContent = total;
-    document.getElementById('avgGlucose').textContent = avg;
+    
+    const totalCountElem = document.getElementById('totalCount');
+    const avgGlucoseElem = document.getElementById('avgGlucose');
+    
+    if (totalCountElem) totalCountElem.textContent = total;
+    if (avgGlucoseElem) avgGlucoseElem.textContent = avg;
 }
 
 export async function updateTable() {
@@ -84,6 +94,8 @@ export async function updateTable() {
     updateStats(filtered);
     
     const tbody = document.getElementById('recordsList');
+    if (!tbody) return;
+    
     if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="empty-state">📭 Nenhum registro encontrado</td</tr>';
         return;
@@ -113,14 +125,16 @@ export async function updateTable() {
 }
 
 export async function updateUI() {
-    await loadGlucose();
+    const records = await loadGlucose();
     await updateTable();
     
-    const records = getRecords();
-    if (records.length > 0) {
-        document.getElementById('currentGlucose').textContent = records[0].glucose;
-    } else {
-        document.getElementById('currentGlucose').textContent = '--';
+    const currentGlucoseElem = document.getElementById('currentGlucose');
+    if (currentGlucoseElem) {
+        if (records.length > 0) {
+            currentGlucoseElem.textContent = records[0].glucose;
+        } else {
+            currentGlucoseElem.textContent = '--';
+        }
     }
 }
 
@@ -143,15 +157,21 @@ export function initFilters() {
         });
     });
     
-    document.getElementById('searchInput')?.addEventListener('input', (e) => {
-        searchTerm = e.target.value;
-        updateTable();
-    });
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            updateTable();
+        });
+    }
 }
 
 export function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    document.getElementById(`${tabId}Screen`).classList.add('active');
+    const targetTab = document.getElementById(`${tabId}Screen`);
+    if (targetTab) targetTab.classList.add('active');
+    
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.querySelector(`.nav-item[data-tab="${tabId}"]`).classList.add('active');
+    const targetNav = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+    if (targetNav) targetNav.classList.add('active');
 }
