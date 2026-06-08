@@ -1,6 +1,10 @@
-
 import { auth } from './firebase-config.js';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 import { saveUserProfile, loadUserProfile } from './database.js';
 import { updateUI, showNotification, showLoading, hideLoading } from './ui.js';
 
@@ -61,7 +65,7 @@ export async function logout() {
     showNotification('Desconectado');
 }
 
-export function initAuth() {
+export function initAuth(callback) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user;
@@ -70,5 +74,6 @@ export function initAuth() {
             document.getElementById('appScreen').classList.add('active');
             document.getElementById('loginScreen').classList.remove('active');
         }
+        if (callback) callback(user);
     });
 }
