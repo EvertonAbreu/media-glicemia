@@ -522,4 +522,196 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('appScreen').classList.add('active');
         document.getElementById('loginScreen').classList.remove('active');
     }
+// Adicione ao seu script.js
+
+// Variáveis para gráficos
+let glucoseChart = null;
+
+// Inicializar gráfico
+function initChart() {
+    const ctx = document.getElementById('glucoseChart')?.getContext('2d');
+    if (!ctx) return;
+    
+    // Carregar Chart.js
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+    script.onload = () => {
+        glucoseChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Glicemia (mg/dL)',
+                    data: [],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102,126,234,0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Meta Superior (140)',
+                    data: [],
+                    borderColor: '#ff8787',
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0
+                }, {
+                    label: 'Meta Inferior (70)',
+                    data: [],
+                    borderColor: '#ff6b6b',
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    y: { min: 0, max: 300, title: { display: true, text: 'mg/dL' } }
+                }
+            }
+        });
+    };
+    document.head.appendChild(script);
+}
+
+// Atualizar gráfico com dados
+function updateChart(records) {
+    if (!glucoseChart) return;
+    
+    const last30Days = records.slice(0, 30).reverse();
+    const labels = last30Days.map(r => r.datetime.split(' ')[0]);
+    const data = last30Days.map(r => r.glucose);
+    
+    glucoseChart.data.labels = labels;
+    glucoseChart.data.datasets[0].data = data;
+    glucoseChart.data.datasets[1].data = labels.map(() => 140);
+    glucoseChart.data.datasets[2].data = labels.map(() => 70);
+    glucoseChart.update();
+}
+
+// Calcular meta de controle
+function updateGoalProgress(records) {
+    const last30Days = records.slice(0, 30);
+    const inTarget = last30Days.filter(r => r.glucose >= 70 && r.glucose <= 140).length;
+    const percentage = last30Days.length > 0 ? (inTarget / last30Days.length) * 100 : 0;
+    
+    document.getElementById('goalProgress').style.width = percentage + '%';
+    const goalText = document.getElementById('goalText');
+    
+    if (percentage >= 80) {
+        goalText.innerHTML = '🎉 Excelente! Você está no caminho certo!';
+        goalText.style.color = '#28a745';
+    } else if (percentage >= 60) {
+        goalText.innerHTML = '👍 Bom trabalho! Continue assim!';
+        goalText.style.color = '#ffc107';
+    } else {
+        goalText.innerHTML = '⚠️ Atenção! Consulte seu médico para ajustes.';
+        goalText.style.color = '#dc3545';
+    }
+}
+
+// Gerar insights de saúde
+function generateHealthInsights(records) {
+    const insights = [];
+    const last7Days = records.slice(0, 7);
+    const avgGlucose = last7Days.reduce((sum, r) => sum + r.glucose, 0) / last7Days.length;
+    
+    // Insight 1: Média da semana
+    if (avgGlucose > 140) {
+        insights.push('Sua glicemia média está acima do ideal. Considere revisar alimentação e medicação.');
+    } else if (avgGlucose < 70) {
+        insights.push('Sua glicemia média está baixa. Mantenha lanches por perto e evite pular refeições.');
+    } else {
+        insights.push('Ótimo! Sua glicemia média está dentro da meta.');
+    }
+    
+    // Insight 2: Horários críticos
+    const morningReadings = records.filter(r => r.datetime.includes('06:') || r.datetime.includes('07:') || r.datetime.includes('08:'));
+    const morningAvg = morningReadings.length > 0 ? morningReadings.reduce((sum, r) => sum + r.glucose, 0) / morningReadings.length : 0;
+    
+    if (morningAvg > 140) {
+        insights.push('⚠️ Atenção aos horários da manhã. Considere ajustar medicação noturna.');
+    }
+    
+    // Insight 3: Variação
+    const values = records.slice(0, 30).map(r => r.glucose);
+    const max = Math.max(...values);
+    const min = Math.min(...values);
+    const variation = max - min;
+    
+    if (variation > 100) {
+        insights.push('📊 Grande variação glicêmica detectada. Procure manter horários regulares de alimentação.');
+    }
+    
+    // Insight 4: Última medição
+    if (records.length > 0 && records[0].glucose > 180) {
+        insights.push('🚨 Última medição muito alta. Verifique se a insulina foi aplicada corretamente.');
+    }
+    
+    const insightsList = document.getElementById('healthInsights');
+    if (insightsList) {
+        insightsList.innerHTML = insights.map(i => `<li>${i}</li>`).join('');
+    }
+}
+
+// Resumo semanal
+function updateWeeklySummary(records) {
+    const weekdays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    const summary = {};
+    
+    weekdays.forEach(day => { summary[day] = { count: 0, sum: 0 }; });
+    
+    records.forEach(record => {
+        const date = new Date(record.datetime.split(' ')[0]);
+        const dayName = weekdays[date.getDay()];
+        summary[dayName].count++;
+        summary[dayName].sum += record.glucose;
+    });
+    
+    const weeklyDiv = document.getElementById('weeklySummary');
+    if (weeklyDiv) {
+        weeklyDiv.innerHTML = weekdays.map(day => {
+            const avg = summary[day].count > 0 ? (summary[day].sum / summary[day].count).toFixed(0) : '-';
+            let status = '';
+            if (avg > 140) status = '🔴 Alta';
+            else if (avg < 70) status = '🟡 Baixa';
+            else if (avg !== '-') status = '🟢 Normal';
+            
+            return `
+                <div class="day-summary">
+                    <span class="day-name">${day}</span>
+                    <span class="day-glucose">${avg !== '-' ? avg + ' mg/dL' : 'Sem dados'}</span>
+                    <span class="day-status">${status}</span>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+// Dicas personalizadas baseadas nos dados
+function getPersonalizedTip(records) {
+    if (records.length === 0) return tips[0];
+    
+    const lastReading = records[0].glucose;
+    
+    if (lastReading > 180) {
+        return "⚠️ Glicemia alta! Beba água, faça uma caminhada leve e verifique se a insulina foi aplicada corretamente.";
+    } else if (lastReading < 70) {
+        return "🍬 Glicemia baixa! Consuma 15g de carboidrato rápido (suco, mel, açúcar) e meça novamente em 15 minutos.";
+    } else if (lastReading >= 70 && lastReading <= 140) {
+        const goodTips = [
+            "Excelente controle! Continue monitorando regularmente.",
+            "Parabéns! Mantenha a alimentação balanceada.",
+            "Ótimo resultado! Não se esqueça de manter os exercícios."
+        ];
+        return goodTips[Math.floor(Math.random() * goodTips.length)];
+    }
+    
+    return tips[Math.floor(Math.random() * tips.length)];
+}
 });
