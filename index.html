@@ -70,6 +70,44 @@
                     </div>
                     <button type="submit" class="btn-primary">Cadastrar</button>
                 </form>
+                <!-- Adicione dentro do form id="glucoseForm" -->
+<div class="input-group">
+    <label>🍽️ Refeição antes da medição</label>
+    <select id="mealType">
+        <option value="">Selecione...</option>
+        <option value="jejum">Jejum (8h+)</option>
+        <option value="pre-refeicao">Pré-refeição</option>
+        <option value="pos-refeicao-1h">Pós-refeição (1h)</option>
+        <option value="pos-refeicao-2h">Pós-refeição (2h)</option>
+    </select>
+</div>
+
+<div class="input-group">
+    <label>📝 O que comeu?</label>
+    <input type="text" id="mealDescription" placeholder="Ex: Arroz, feijão, carne...">
+</div>
+
+<div class="input-group">
+    <label>💪 Atividade física nas últimas 24h?</label>
+    <div class="radio-group">
+        <label><input type="radio" name="exercise" value="nenhum"> Nenhum</label>
+        <label><input type="radio" name="exercise" value="leve"> Leve (caminhada)</label>
+        <label><input type="radio" name="exercise" value="moderado"> Moderado (corrida)</label>
+        <label><input type="radio" name="exercise" value="intenso"> Intenso (academia)</label>
+    </div>
+</div>
+
+<div class="input-group">
+    <label>😊 Como se sente?</label>
+    <div class="mood-buttons">
+        <button type="button" class="mood-btn" data-mood="😊 Ótimo">😊 Ótimo</button>
+        <button type="button" class="mood-btn" data-mood="🙂 Bem">🙂 Bem</button>
+        <button type="button" class="mood-btn" data-mood="😐 Normal">😐 Normal</button>
+        <button type="button" class="mood-btn" data-mood="😔 Cansado">😔 Cansado</button>
+        <button type="button" class="mood-btn" data-mood="😫 Mal">😫 Mal</button>
+    </div>
+    <input type="hidden" id="mood" value="">
+</div>
                 <div class="auth-link">
                     Já tem conta? <span onclick="showLogin()">Fazer login</span>
                 </div>
@@ -282,6 +320,45 @@
                     <span class="nav-icon">👤</span>
                     <span class="nav-label">Perfil</span>
                 </button>
+                <!-- Nova aba no bottom navigation -->
+<button class="nav-item" data-tab="stats">
+    <span class="nav-icon">📈</span>
+    <span class="nav-label">Estatísticas</span>
+</button>
+
+<!-- Conteúdo da tela de estatísticas -->
+<div id="statsScreen" class="tab-content">
+    <div class="stats-advanced">
+        <h2>📊 Análise Detalhada</h2>
+        
+        <div class="goal-card">
+            <h3>🎯 Meta de Glicemia</h3>
+            <div class="goal-range">
+                <span>Meta: 70-140 mg/dL</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="goalProgress" style="width: 0%"></div>
+                </div>
+                <p id="goalText">Carregando...</p>
+            </div>
+        </div>
+        
+        <div class="stats-charts">
+            <canvas id="glucoseChart" width="400" height="200"></canvas>
+        </div>
+        
+        <div class="insights-card">
+            <h3>💡 Insights de Saúde</h3>
+            <ul id="healthInsights">
+                <li>Carregando...</li>
+            </ul>
+        </div>
+        
+        <div class="weekly-summary">
+            <h3>📅 Resumo da Semana</h3>
+            <div id="weeklySummary"></div>
+        </div>
+    </div>
+</div>
             </div>
         </div>
     </div>
