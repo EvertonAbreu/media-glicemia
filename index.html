@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>DiabCare - Controle de Diabetes</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -70,53 +71,14 @@
                     </div>
                     <button type="submit" class="btn-primary">Cadastrar</button>
                 </form>
-                <!-- Adicione dentro do form id="glucoseForm" -->
-<div class="input-group">
-    <label>🍽️ Refeição antes da medição</label>
-    <select id="mealType">
-        <option value="">Selecione...</option>
-        <option value="jejum">Jejum (8h+)</option>
-        <option value="pre-refeicao">Pré-refeição</option>
-        <option value="pos-refeicao-1h">Pós-refeição (1h)</option>
-        <option value="pos-refeicao-2h">Pós-refeição (2h)</option>
-    </select>
-</div>
-
-<div class="input-group">
-    <label>📝 O que comeu?</label>
-    <input type="text" id="mealDescription" placeholder="Ex: Arroz, feijão, carne...">
-</div>
-
-<div class="input-group">
-    <label>💪 Atividade física nas últimas 24h?</label>
-    <div class="radio-group">
-        <label><input type="radio" name="exercise" value="nenhum"> Nenhum</label>
-        <label><input type="radio" name="exercise" value="leve"> Leve (caminhada)</label>
-        <label><input type="radio" name="exercise" value="moderado"> Moderado (corrida)</label>
-        <label><input type="radio" name="exercise" value="intenso"> Intenso (academia)</label>
-    </div>
-</div>
-
-<div class="input-group">
-    <label>😊 Como se sente?</label>
-    <div class="mood-buttons">
-        <button type="button" class="mood-btn" data-mood="😊 Ótimo">😊 Ótimo</button>
-        <button type="button" class="mood-btn" data-mood="🙂 Bem">🙂 Bem</button>
-        <button type="button" class="mood-btn" data-mood="😐 Normal">😐 Normal</button>
-        <button type="button" class="mood-btn" data-mood="😔 Cansado">😔 Cansado</button>
-        <button type="button" class="mood-btn" data-mood="😫 Mal">😫 Mal</button>
-    </div>
-    <input type="hidden" id="mood" value="">
-</div>
                 <div class="auth-link">
                     Já tem conta? <span onclick="showLogin()">Fazer login</span>
                 </div>
             </div>
         </div>
 
-        <!-- Tela Principal do App com Bottom Navigation -->
+        <!-- Tela Principal do App -->
         <div id="appScreen" class="screen">
-            <!-- Conteúdo Principal -->
             <div class="main-content">
                 <!-- Tela Início -->
                 <div id="homeScreen" class="tab-content active">
@@ -163,7 +125,7 @@
 
                     <div class="quick-tips">
                         <h4>💡 Dica do Dia</h4>
-                        <p id="dailyTip">Manter a glicemia controlada ajuda a prevenir complicações!</p>
+                        <p id="dailyTip">Carregando dica...</p>
                     </div>
                 </div>
 
@@ -188,7 +150,7 @@
                                     <span class="high">Alto &gt;140</span>
                                 </div>
                             </div>
-                            <div class="input-group slide-down" id="insulinGroup" style="display: none;">
+                            <div class="input-group" id="insulinGroup" style="display: none;">
                                 <label>💉 Insulina (unidades)</label>
                                 <div class="insulin-input-wrapper">
                                     <button type="button" class="insulin-dec">-</button>
@@ -197,8 +159,27 @@
                                 </div>
                             </div>
                             <div class="input-group">
+                                <label>🍽️ Refeição antes da medição</label>
+                                <select id="mealType">
+                                    <option value="">Selecione...</option>
+                                    <option value="jejum">Jejum (8h+)</option>
+                                    <option value="pre-refeicao">Pré-refeição</option>
+                                    <option value="pos-refeicao-1h">Pós-refeição (1h)</option>
+                                    <option value="pos-refeicao-2h">Pós-refeição (2h)</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>💪 Atividade física</label>
+                                <div class="radio-group">
+                                    <label><input type="radio" name="exercise" value="nenhum"> Nenhum</label>
+                                    <label><input type="radio" name="exercise" value="leve"> Leve</label>
+                                    <label><input type="radio" name="exercise" value="moderado"> Moderado</label>
+                                    <label><input type="radio" name="exercise" value="intenso"> Intenso</label>
+                                </div>
+                            </div>
+                            <div class="input-group">
                                 <label>📋 Observações</label>
-                                <textarea id="notes" rows="3" placeholder="Sintomas, alimentação, exercícios..."></textarea>
+                                <textarea id="notes" rows="3" placeholder="Sintomas, alimentação..."></textarea>
                             </div>
                             <button type="submit" class="btn-submit">
                                 <span>💾</span> Salvar Medição
@@ -213,7 +194,6 @@
                         <h2>📊 Histórico de Medições</h2>
                     </div>
                     
-                    <!-- Filtros Avançados -->
                     <div class="filters-advanced">
                         <div class="filter-group">
                             <label>📅 Período</label>
@@ -237,25 +217,17 @@
                         
                         <div class="filter-actions">
                             <input type="text" id="searchInput" placeholder="🔍 Buscar por data..." class="search-input">
-                            <button id="exportPDFBtn" class="btn-export">📄 Exportar PDF</button>
+                            <button id="exportPDFBtn" class="btn-export">📄 PDF</button>
                         </div>
                     </div>
                     
                     <div class="table-wrapper">
                         <table class="records-table">
                             <thead>
-                                <tr>
-                                    <th>Data/Hora</th>
-                                    <th>Dia</th>
-                                    <th>Glicemia</th>
-                                    <th>Status</th>
-                                    <th>Insulina</th>
-                                    <th>Obs</th>
-                                    <th>Ações</th>
-                                </tr>
+                                <tr><th>Data/Hora</th><th>Dia</th><th>Glicemia</th><th>Status</th><th>Insulina</th><th>Obs</th><th>Ações</th></tr>
                             </thead>
                             <tbody id="recordsList">
-                                <tr><td colspan="7" class="empty-state">📭 Nenhum registro encontrado</td</tr>
+                                <tr><td colspan="7" class="empty-state">📭 Nenhum registro encontrado</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -286,87 +258,66 @@
                     
                     <div class="profile-info-card">
                         <h3>📋 Informações da Conta</h3>
-                        <div class="info-row">
-                            <span>Membro desde:</span>
-                            <strong id="memberSince">-</strong>
-                        </div>
-                        <div class="info-row">
-                            <span>Último acesso:</span>
-                            <strong id="lastLogin">-</strong>
-                        </div>
+                        <div class="info-row"><span>Membro desde:</span><strong id="memberSince">-</strong></div>
                     </div>
                     
                     <div class="profile-actions">
                         <button class="btn-logout" onclick="logout()">🚪 Sair da Conta</button>
                     </div>
                 </div>
+
+                <!-- Tela Estatísticas -->
+                <div id="statsScreen" class="tab-content">
+                    <div class="stats-advanced">
+                        <h2>📊 Análise Detalhada</h2>
+                        
+                        <div class="goal-card">
+                            <h3>🎯 Meta de Glicemia</h3>
+                            <div class="goal-range">
+                                <span>Meta: 70-140 mg/dL</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="goalProgress" style="width: 0%"></div>
+                                </div>
+                                <p id="goalText">Carregando...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-charts">
+                            <canvas id="glucoseChart" width="400" height="200"></canvas>
+                        </div>
+                        
+                        <div class="insights-card">
+                            <h3>💡 Insights de Saúde</h3>
+                            <ul id="healthInsights"><li>Carregando...</li></ul>
+                        </div>
+                        
+                        <div class="weekly-summary">
+                            <h3>📅 Resumo da Semana</h3>
+                            <div id="weeklySummary"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Bottom Navigation -->
             <div class="bottom-nav">
-                <button class="nav-item active" data-tab="home">
-                    <span class="nav-icon">🏠</span>
-                    <span class="nav-label">Início</span>
-                </button>
-                <button class="nav-item" data-tab="new">
-                    <span class="nav-icon">➕</span>
-                    <span class="nav-label">Nova</span>
-                </button>
-                <button class="nav-item" data-tab="history">
-                    <span class="nav-icon">📊</span>
-                    <span class="nav-label">Histórico</span>
-                </button>
-                <button class="nav-item" data-tab="profile">
-                    <span class="nav-icon">👤</span>
-                    <span class="nav-label">Perfil</span>
-                </button>
-                <!-- Nova aba no bottom navigation -->
-<button class="nav-item" data-tab="stats">
-    <span class="nav-icon">📈</span>
-    <span class="nav-label">Estatísticas</span>
-</button>
-
-<!-- Conteúdo da tela de estatísticas -->
-<div id="statsScreen" class="tab-content">
-    <div class="stats-advanced">
-        <h2>📊 Análise Detalhada</h2>
-        
-        <div class="goal-card">
-            <h3>🎯 Meta de Glicemia</h3>
-            <div class="goal-range">
-                <span>Meta: 70-140 mg/dL</span>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="goalProgress" style="width: 0%"></div>
-                </div>
-                <p id="goalText">Carregando...</p>
-            </div>
-        </div>
-        
-        <div class="stats-charts">
-            <canvas id="glucoseChart" width="400" height="200"></canvas>
-        </div>
-        
-        <div class="insights-card">
-            <h3>💡 Insights de Saúde</h3>
-            <ul id="healthInsights">
-                <li>Carregando...</li>
-            </ul>
-        </div>
-        
-        <div class="weekly-summary">
-            <h3>📅 Resumo da Semana</h3>
-            <div id="weeklySummary"></div>
-        </div>
-    </div>
-</div>
+                <button class="nav-item active" data-tab="home"><span class="nav-icon">🏠</span><span class="nav-label">Início</span></button>
+                <button class="nav-item" data-tab="new"><span class="nav-icon">➕</span><span class="nav-label">Nova</span></button>
+                <button class="nav-item" data-tab="history"><span class="nav-icon">📊</span><span class="nav-label">Histórico</span></button>
+                <button class="nav-item" data-tab="stats"><span class="nav-icon">📈</span><span class="nav-label">Stats</span></button>
+                <button class="nav-item" data-tab="profile"><span class="nav-icon">👤</span><span class="nav-label">Perfil</span></button>
             </div>
         </div>
     </div>
 
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-    </div>
+    <div class="loading" id="loading"><div class="spinner"></div></div>
 
-    <script type="module" src="script.js"></script>
+    <!-- Scripts -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/database.js"></script>
+    <script type="module" src="js/charts.js"></script>
+    <script type="module" src="js/ui.js"></script>
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>
