@@ -22,17 +22,24 @@ window.login = login;
 window.register = register;
 window.logout = logout;
 
-window.showRegister = () => {
-    document.getElementById('loginScreen').classList.remove('active');
-    document.getElementById('registerScreen').classList.add('active');
+// Funções de navegação entre telas
+window.showRegister = function() {
+    console.log("Abrindo tela de cadastro");
+    const loginScreen = document.getElementById('loginScreen');
+    const registerScreen = document.getElementById('registerScreen');
+    if (loginScreen) loginScreen.classList.remove('active');
+    if (registerScreen) registerScreen.classList.add('active');
 };
 
-window.showLogin = () => {
-    document.getElementById('registerScreen').classList.remove('active');
-    document.getElementById('loginScreen').classList.add('active');
+window.showLogin = function() {
+    console.log("Abrindo tela de login");
+    const loginScreen = document.getElementById('loginScreen');
+    const registerScreen = document.getElementById('registerScreen');
+    if (registerScreen) registerScreen.classList.remove('active');
+    if (loginScreen) loginScreen.classList.add('active');
 };
 
-// Inicializar navegação
+// Inicializar navegação das abas
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', () => switchTab(item.dataset.tab));
 });
@@ -106,7 +113,7 @@ if (exportBtn) {
                 <table>
                     <thead><tr><th>Data/Hora</th><th>Glicemia</th><th>Insulina</th><th>Observações</th></tr></thead>
                     <tbody>
-                        ${records.map(r => `<tr><td>${r.datetime}${'</td><td>'}${r.glucose} mg/dL${'</td><td>'}${r.insulin || '-'}${'</td><td>'}${r.notes || '-'}${'</td></tr>'`).join('')}
+                        ${records.map(r => `<tr><td>${r.datetime}</td><td>${r.glucose} mg/dL</td><td>${r.insulin || '-'}</td><td>${r.notes || '-'}</td></tr>`).join('')}
                     </tbody>
                 </table>
                 <div class="footer">Relatório gerado pelo DiabCare - Sistema de Controle de Diabetes</div>
@@ -235,6 +242,7 @@ if (datetimeInput) datetimeInput.value = now.toISOString().slice(0, 16);
 
 // Inicializar tudo
 async function initializeApp() {
+    console.log("Inicializando aplicação...");
     updateDailyTip();
     initFilters();
     initChart();
