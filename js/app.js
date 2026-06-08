@@ -1,7 +1,7 @@
 import { login, register, logout, initAuth, getCurrentUser } from './auth.js';
-import { saveGlucose, getRecords, deleteGlucose, setRecords } from './database.js';
+import { saveGlucose, getRecords, deleteGlucose } from './database.js';
 import { showNotification, updateUI, initFilters, switchTab, updateDailyTip, showLoading, hideLoading } from './ui.js';
-import { initChart, updateChart, updateGoalProgress, generateHealthInsights, updateWeeklySummary } from './charts.js';
+import { initChart, updateChart, updateGoalProgress, generateHealthInsights, updateWeeklySummary, initHomeChart, updateHomeChart } from './charts.js';
 
 // Função global para deletar registro
 window.deleteRecord = async function(id) {
@@ -9,6 +9,7 @@ window.deleteRecord = async function(id) {
         await deleteGlucose(id);
         await updateUI();
         await updateChart();
+        await updateHomeChart();
         await updateGoalProgress();
         await generateHealthInsights();
         await updateWeeklySummary();
@@ -64,6 +65,7 @@ if (glucoseInput) {
         if (insulinGroup) {
             if (!isNaN(value) && (value > 140 || value < 70)) {
                 insulinGroup.style.display = 'block';
+                insulinGroup.classList.add('slide-down');
             } else {
                 insulinGroup.style.display = 'none';
             }
@@ -95,6 +97,7 @@ if (exportBtn) {
                     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
                     th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
                     th { background: #667eea; color: white; }
+                    .footer { margin-top: 30px; text-align: center; color: #999; font-size: 12px; }
                 </style>
             </head>
             <body>
@@ -103,9 +106,10 @@ if (exportBtn) {
                 <table>
                     <thead><tr><th>Data/Hora</th><th>Glicemia</th><th>Insulina</th><th>Observações</th></tr></thead>
                     <tbody>
-                        ${records.map(r => `<tr><td>${r.datetime}</td><td>${r.glucose} mg/dL</td><td>${r.insulin || '-'}</td><td>${r.notes || '-'}</td></tr>`).join('')}
+                        ${records.map(r => `<tr><td>${r.datetime}${'</td><td>'}${r.glucose} mg/dL${'</td><td>'}${r.insulin || '-'}${'</td><td>'}${r.notes || '-'}${'</td></tr>'`).join('')}
                     </tbody>
                 </table>
+                <div class="footer">Relatório gerado pelo DiabCare - Sistema de Controle de Diabetes</div>
             </body>
             </html>
         `;
@@ -122,7 +126,7 @@ if (exportBtn) {
             html2pdf().set(opt).from(pdfContent).save();
             showNotification('PDF gerado com sucesso!');
         } catch (error) {
-            showNotification('Erro ao gerar PDF', 'error');
+            showNotification('Erro ao gerar PDF: ' + error.message, 'error');
         } finally {
             hideLoading();
         }
@@ -171,6 +175,8 @@ if (glucoseForm) {
         const datetime = document.getElementById('datetime').value;
         const glucose = parseInt(document.getElementById('glucose').value);
         const insulin = document.getElementById('insulin').value;
+        const mealType = document.getElementById('mealType')?.value || '';
+        const exercise = document.querySelector('input[name="exercise"]:checked')?.value || '';
         const notes = document.getElementById('notes').value;
         
         if (!datetime || isNaN(glucose)) {
@@ -189,11 +195,14 @@ if (glucoseForm) {
                 datetime: datetime.replace('T', ' '),
                 glucose,
                 insulin: insulin || null,
+                mealType,
+                exercise,
                 notes: notes || ''
             });
             
             await updateUI();
             await updateChart();
+            await updateHomeChart();
             await updateGoalProgress();
             await generateHealthInsights();
             await updateWeeklySummary();
@@ -210,7 +219,8 @@ if (glucoseForm) {
             
             showNotification('Medição salva com sucesso!');
         } catch (error) {
-            showNotification('Erro ao salvar', 'error');
+            console.error('Erro ao salvar:', error);
+            showNotification('Erro ao salvar medição', 'error');
         } finally {
             hideLoading();
         }
@@ -223,23 +233,33 @@ now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
 const datetimeInput = document.getElementById('datetime');
 if (datetimeInput) datetimeInput.value = now.toISOString().slice(0, 16);
 
-// Inicializar
-updateDailyTip();
-initFilters();
-initChart();
-
-// Observar atualizações de UI para gráficos
-const observer = new MutationObserver(() => {
-    updateChart();
-    updateGoalProgress();
-    generateHealthInsights();
-    updateWeeklySummary();
-});
-
-const recordsList = document.getElementById('recordsList');
-if (recordsList) {
-    observer.observe(recordsList, { childList: true, subtree: true });
+// Inicializar tudo
+async function initializeApp() {
+    updateDailyTip();
+    initFilters();
+    initChart();
+    initHomeChart();
+    
+    // Observar atualizações de UI para gráficos
+    const observer = new MutationObserver(() => {
+        const records = getRecords();
+        if (records.length > 0) {
+            updateChart();
+            updateHomeChart();
+            updateGoalProgress();
+            generateHealthInsights();
+            updateWeeklySummary();
+        }
+    });
+    
+    const recordsList = document.getElementById('recordsList');
+    if (recordsList) {
+        observer.observe(recordsList, { childList: true, subtree: true });
+    }
+    
+    // Iniciar autenticação
+    initAuth();
 }
 
-// Iniciar autenticação
-initAuth();
+// Executar inicialização
+initializeApp();
