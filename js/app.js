@@ -81,7 +81,7 @@ if (glucoseInput) {
 }
 
 // ============================================================
-// EXPORT PDF - VERSÃO SIMPLIFICADA E FUNCIONAL
+// EXPORT PDF - VERSÃO SIMPLIFICADA (FUNCIONAL)
 // ============================================================
 const exportBtn = document.getElementById('exportPDFBtn');
 if (exportBtn) {
@@ -142,7 +142,7 @@ if (exportBtn) {
             return types[meal] || meal || '-';
         }
 
-        // Gerar HTML do PDF
+        // Gerar o HTML do relatório
         const htmlContent = `
         <!DOCTYPE html>
         <html>
@@ -153,43 +153,43 @@ if (exportBtn) {
                 * { margin: 0; padding: 0; box-sizing: border-box; }
                 body { 
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-                    padding: 30px; 
+                    padding: 40px; 
                     color: #2d3748;
                     background: #f7fafc;
                 }
                 .header {
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     color: white;
-                    padding: 25px 30px;
-                    border-radius: 10px;
-                    margin-bottom: 25px;
+                    padding: 30px;
+                    border-radius: 12px;
+                    margin-bottom: 30px;
                 }
-                .header h1 { font-size: 24px; font-weight: 700; }
-                .header p { opacity: 0.9; font-size: 13px; margin-top: 5px; }
+                .header h1 { font-size: 28px; font-weight: 700; }
+                .header p { opacity: 0.9; font-size: 14px; margin-top: 5px; }
                 .summary {
                     display: flex;
                     gap: 15px;
-                    margin-bottom: 25px;
+                    margin-bottom: 30px;
                     flex-wrap: wrap;
                 }
                 .summary-box {
                     background: white;
-                    padding: 12px 20px;
+                    padding: 15px 25px;
                     border-radius: 8px;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                     flex: 1;
-                    min-width: 100px;
+                    min-width: 120px;
                     text-align: center;
                 }
                 .summary-box .number {
-                    font-size: 22px;
+                    font-size: 24px;
                     font-weight: 700;
                     color: #667eea;
                 }
                 .summary-box .label {
-                    font-size: 11px;
+                    font-size: 12px;
                     color: #718096;
-                    margin-top: 3px;
+                    margin-top: 4px;
                 }
                 table { 
                     width: 100%; 
@@ -197,40 +197,40 @@ if (exportBtn) {
                     background: white;
                     border-radius: 8px;
                     overflow: hidden;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-                    font-size: 12px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                 }
                 th { 
                     background: #667eea; 
                     color: white; 
-                    padding: 10px 12px;
+                    padding: 12px 15px;
                     text-align: left;
                     font-weight: 600;
+                    font-size: 13px;
                 }
                 td { 
                     border-bottom: 1px solid #e2e8f0; 
-                    padding: 8px 12px;
+                    padding: 10px 15px;
+                    font-size: 13px;
                 }
                 tr:last-child td { border-bottom: none; }
                 .status-badge {
                     display: inline-block;
-                    padding: 2px 10px;
+                    padding: 2px 12px;
                     border-radius: 20px;
-                    font-size: 11px;
+                    font-size: 12px;
                     font-weight: 500;
                 }
                 .status-low { background: #fed7d7; color: #c53030; }
                 .status-normal { background: #c6f6d5; color: #276749; }
                 .status-high { background: #feebc8; color: #c05621; }
                 .footer { 
-                    margin-top: 25px; 
+                    margin-top: 30px; 
                     text-align: center; 
                     color: #a0aec0; 
-                    font-size: 11px;
+                    font-size: 12px;
                     border-top: 1px solid #e2e8f0;
-                    padding-top: 15px;
+                    padding-top: 20px;
                 }
-                .empty-state { text-align: center; padding: 20px; color: #a0aec0; }
             </style>
         </head>
         <body>
@@ -273,7 +273,7 @@ if (exportBtn) {
                     </tr>
                 </thead>
                 <tbody>
-                    ${records.length > 0 ? records.map(r => `
+                    ${records.map(r => `
                         <tr>
                             <td>${formatDateTime(r.datetime)}</td>
                             <td><strong>${r.glucose}</strong> mg/dL</td>
@@ -283,37 +283,38 @@ if (exportBtn) {
                             <td>${r.exercise ? r.exercise.charAt(0).toUpperCase() + r.exercise.slice(1) : '-'}</td>
                             <td>${r.notes || '-'}</td>
                         </tr>
-                    `).join('') : `
-                        <tr><td colspan="7" class="empty-state">Nenhum registro encontrado</td></tr>
-                    `}
+                    `).join('')}
                 </tbody>
             </table>
             
             <div class="footer">
                 <p>Relatório gerado pelo DiabCare - Sistema de Controle de Diabetes</p>
+                <p style="margin-top: 5px;">Este relatório contém informações pessoais. Mantenha em local seguro.</p>
             </div>
         </body>
         </html>`;
 
         try {
-            // Método 1: Tentar com html2pdf
-            const element = document.createElement('div');
-            element.innerHTML = htmlContent;
-            element.style.position = 'absolute';
-            element.style.left = '-9999px';
-            element.style.top = '-9999px';
-            element.style.width = '1200px';
-            document.body.appendChild(element);
+            // MÉTODO 1: Tentar com html2pdf usando elemento DOM
+            const container = document.createElement('div');
+            container.innerHTML = htmlContent;
+            container.style.position = 'absolute';
+            container.style.left = '-9999px';
+            container.style.top = '0';
+            container.style.width = '1100px';
+            container.style.background = 'white';
+            container.style.padding = '20px';
+            document.body.appendChild(container);
 
             const opt = {
-                margin: [0.5, 0.5],
+                margin: 0.5,
                 filename: `diabcare_${new Date().toISOString().slice(0, 10)}.pdf`,
-                image: { type: 'jpeg', quality: 0.95 },
+                image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
                     useCORS: true,
                     logging: false,
-                    width: 1200
+                    width: 1100
                 },
                 jsPDF: { 
                     unit: 'in', 
@@ -322,28 +323,43 @@ if (exportBtn) {
                 }
             };
 
-            await html2pdf().set(opt).from(element).save();
-            document.body.removeChild(element);
+            await html2pdf().set(opt).from(container).save();
+            document.body.removeChild(container);
             showNotification('PDF gerado com sucesso!');
             
         } catch (error) {
-            console.error('Erro no método 1:', error);
+            console.error('Erro ao gerar PDF com html2pdf:', error);
             
-            // Método 2: Fallback - abrir para impressão
+            // MÉTODO 2: Fallback - abrir em nova janela para impressão
             try {
-                const printWindow = window.open('', '_blank', 'width=1200,height=800');
+                const printWindow = window.open('', '_blank', 'width=1100,height=800');
                 if (printWindow) {
                     printWindow.document.write(htmlContent);
                     printWindow.document.close();
                     printWindow.focus();
-                    printWindow.print();
+                    
+                    // Aguardar carregamento e abrir impressão
+                    setTimeout(() => {
+                        printWindow.print();
+                    }, 500);
+                    
                     showNotification('Use "Salvar como PDF" na janela de impressão');
                 } else {
-                    showNotification('Permita pop-ups para gerar o PDF', 'error');
+                    // MÉTODO 3: Fallback final - criar link para download
+                    const blob = new Blob([htmlContent], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `diabcare_${new Date().toISOString().slice(0, 10)}.html`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    showNotification('Arquivo HTML baixado. Abra e imprima como PDF.', 'info');
                 }
             } catch (fallbackError) {
-                console.error('Erro no método 2:', fallbackError);
-                showNotification('Erro ao gerar PDF. Tente usar Chrome ou Firefox.', 'error');
+                console.error('Erro no fallback:', fallbackError);
+                showNotification('Erro ao gerar PDF. Tente usar Chrome.', 'error');
             }
         } finally {
             hideLoading();
